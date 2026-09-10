@@ -3,7 +3,7 @@
 ## Run locally
 Double-click `START-APEX.cmd`, or run `node server.js` and open http://127.0.0.1:4173. All files are on this computer. No ChatGPT sign-in, installation or build is required. The authored website is in `dist/`.
 
-Run `node --test tests/arena.test.js tests/wallet.test.js` to check wallet behavior and the existing competition policy.
+Run `node --test tests/arena.test.js tests/wallet.test.js tests/token-configuration.test.js` to check wallet behavior, token activation and the existing competition policy.
 
 ## Delivery
 Source: https://github.com/amberaiagent/ApexRound, branch `main`.
@@ -20,6 +20,7 @@ The public page no longer uses simulated wallets, traders, pools, countdowns or 
 - Real browser-wallet discovery/connection and explicit Robinhood Chain switching.
 - Read-only ERC-20 balance adapter with exact integer arithmetic, block-specific reads, contract/decimals checks and invalidation when the account or chain changes.
 - The token address and decimals are not configured, so balance checks remain unavailable.
+- The owner can provide a final pons token address; `scripts/configure-token.mjs` checks it and generates the single access-token configuration. See `production/TOKEN.md`.
 - Registration is closed. There is no competition backend, trade ingestion, live ranking or payment service yet.
 - No signatures, token approvals, token locking or payments are requested.
 - The existing visual design, $APEX branding, responsive layouts and agreed competition rules remain.
@@ -29,6 +30,7 @@ This is a step toward the real service, not a completed production trading arena
 ## Structure
 - `dist/index.html`, `style.css`, `app.js`: public interface.
 - `dist/lib/config.js`: public network/token configuration; never add secrets.
+- `dist/lib/access-token.js`: approved token metadata, generated only after the owner supplies the final address.
 - `dist/lib/wallet.js`: wallet discovery, permission requests, network switching and informational token reads.
 - `dist/lib/rounds.js`: previously tested pure round policy; no authoritative live schedule is activated.
 - `tests/fixtures/demo-providers.js`: historical simulation fixtures, excluded from deployment.
@@ -36,4 +38,4 @@ This is a step toward the real service, not a completed production trading arena
 Production entry acceptance must recheck time and balances on a trusted server or contract. User-device time, an address returned by an extension and a browser balance read cannot authorize an entry. Portfolio returns must exclude external funding and value open positions using agreed prices. Payment status must be based on confirmed receipts.
 
 ## Validation
-16 automated tests cover the existing rule boundaries and new wallet integration. Desktop/mobile browser checks cover prelaunch state, absent-wallet guidance, dialog interaction, search and FAQ. The QA browser has no installed wallet: actual extension approval and $APEX onchain reads are still unverified. The contract address is required for that next step.
+24 automated tests cover rule boundaries, wallet integration and token configuration. Desktop/mobile browser checks cover prelaunch state, absent-wallet guidance, dialog interaction, search and FAQ. The owner's example token passed read-only RPC inspection without activation. The QA browser has no installed wallet: actual extension approval and the final $APEX balance still need verification after its contract address is supplied.

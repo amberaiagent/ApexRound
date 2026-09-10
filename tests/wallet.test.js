@@ -60,7 +60,7 @@ test('Rejected connection does not install a simulated account', async () => {
 test('Missing token configuration cannot grant eligibility or issue token RPC reads', async () => {
   const provider = new Provider(), wallet = new BrowserWallet();
   await wallet.connect(provider);
-  await assert.rejects(wallet.checkBalance(config), /not been announced/);
+  await assert.rejects(wallet.checkBalance({ ...config, tokenAddress: null, decimals: null }), /not been announced/);
   assert.ok(provider.calls.every(c => c.method !== 'eth_call'));
 });
 
