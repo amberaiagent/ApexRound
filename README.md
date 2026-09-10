@@ -1,6 +1,19 @@
 # APEX — Earn your place
 
+## Local use
+Double-click `START-APEX.cmd` to start APEX and open it in your browser. No ChatGPT sign-in is needed. All site files are on this computer in this project; `dist/` contains the website. The server listens only on this computer at http://127.0.0.1:4173.
+
+Development stays local. The chosen delivery path is GitHub for source control and the user's VPS for hosting. Do not publish or update the previous Sites-hosted copy; it is separate and is not needed for this project.
+
 Run `node server.js` and open http://127.0.0.1:4173. No installation or build is required. Run `node --test tests/arena.test.js` for boundary checks. The complete deployable site is in `dist/`.
+
+## GitHub and VPS rollout
+1. Prepare the local repository and run the existing checks.
+2. Connect the user's GitHub repository and push the source.
+3. Configure the user's VPS and domain, then serve `dist/` with HTTPS.
+4. Set up automated delivery once manual deployment is verified.
+
+GitHub and VPS are not connected yet. The website in `dist/` is authored source and is intentionally tracked. Local runtime files, archives, logs, environment secrets and previous hosting metadata are excluded by `.gitignore`. Hosting does not turn the simulation into a real trading service.
 
 ## Scope
 English responsive arena with supplied APEX icon, wallet simulation, separate integer balance check and registration, 24-hour rollover, leaderboard/search, personal results, previous rounds, rules, and demo scenario studio. Both original logo files are preserved in `dist/assets`. The wordmark is dark in the provided image; the dark header combines the original icon with a readable typeset name.
@@ -10,11 +23,11 @@ All balances, competition results, entries and allocations are demo data. State 
 ## Architecture and production dependencies
 `lib/config.js` holds unresolved integration and rule settings. `lib/rounds.js` is the pure clock/eligibility policy. `lib/providers.js` separates wallet, balance, registration, result and payout providers. `app.js` composes UI state. Token balances and ETH amounts use BigInt; return uses millionths of a percentage point. Display rounding never controls qualification.
 
-Replace demo adapters with verified integrations only after confirming token address, ticker, decimals, contract addresses, chain ID, RPC, explorer and wallet support from official documentation. Network configuration is intentionally unset. Define fee source, payout currency, minimum portfolio, eligible venues/assets, tie-breaker, continuous holding requirement, verification/payment timing, eligibility token inclusion, fewer-than-ten and zero-winner policies.
+Replace demo adapters with verified integrations only after confirming token address, decimals, contract addresses, chain ID, RPC, explorer and wallet support from official documentation. Network configuration is intentionally unset. Define fee source, payout currency, minimum portfolio, eligible venues/assets, tie-breaker, continuous holding requirement, verification/payment timing, eligibility token inclusion, fewer-than-ten and zero-winner policies.
 
 Production registration needs authoritative server/contract time, a round-scoped nonce and expiry, human-readable signed entry message, wallet signature verification, chain and balance validation, replay protection, and a durable unique constraint on (roundId, wallet). Recheck entry window on acceptance. Local demo entries are intentionally not a security boundary.
 
-A production result provider must ingest trades, transfers and open positions with stable block references. Value the entire eligible portfolio in ETH using approved price sources and observation times; remove external deposit/withdrawal effects using an agreed cash-flow-adjusted methodology. Define illiquid/stale quotes, manipulation checks, reorg/finality handling, decimals, and inclusion of TOKEN. Do not compare raw starting/ending ETH balances. Archive valuation inputs for reproducible review. Resolve ties and disputed data before finalization.
+A production result provider must ingest trades, transfers and open positions with stable block references. Value the entire eligible portfolio in ETH using approved price sources and observation times; remove external deposit/withdrawal effects using an agreed cash-flow-adjusted methodology. Define illiquid/stale quotes, manipulation checks, reorg/finality handling, decimals, and inclusion of $APEX. Do not compare raw starting/ending ETH balances. Archive valuation inputs for reproducible review. Resolve ties and disputed data before finalization.
 
 Payout records must be separate from result finalization, and require confirmed chain receipts before Paid is displayed. No distribution contract is implemented. Explorer links require both a configured explorer and real hash. Current demo history is finalized but unpaid.
 
