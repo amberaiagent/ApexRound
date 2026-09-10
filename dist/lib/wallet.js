@@ -1,3 +1,4 @@
+import { entryMessage } from './entry-message.js';
 const isAddress = value => typeof value === 'string' && /^0x[0-9a-f]{40}$/i.test(value);
 const account = accounts => Array.isArray(accounts) && isAddress(accounts[0]) ? accounts[0].toLowerCase() : null;
 const chain = value => {
@@ -183,6 +184,26 @@ export class BrowserWallet {
     if (this.version !== version) throw new Error('Your wallet or network changed. Check your balance again.');
     const balance = BigInt(raw), required = settings.required * 10n ** BigInt(settings.decimals);
     return { address, balance, required, eligible: balance >= required, missing: balance < required ? required - balance : 0n, block, checkedAt: Date.now() };
+  }
+
+  async signEntry(entry, settings, origin) {
+    await this.refresh();
+    const validTimes = ['startsAt', 'endsAt', 'issuedAt', 'expiresAt'].every(key => Number.isSafeInteger(entry[key]));
+    if (!this.address || this.chainId !== settings.network.chainId || entry.address !== this.address
+        || entry.chainId !== Number(BigInt(settings.network.chainId)) || entry.origin !== origin
+        || entry.tokenAddress !== settings.tokenAddress || entry.roundId !== settings.targetRoundId
+        || !Number.isSafeInteger(entry.roundId) || entry.roundId < 1 || !/^[0-9a-f]{48}$/.test(entry.nonce)
+        || !validTimes || entry.endsAt - entry.startsAt !== 86400000 || entry.expiresAt > entry.startsAt
+        || entry.expiresAt <= entry.issuedAt || entry.expiresAt - entry.issuedAt > 300000
+        || entry.message !== entryMessage(entry)) {
+      throw new Error('Registration details changed. Refresh the arena and try again.');
+    }
+    const provider = this.provider, connection = this.connection, version = this.version;
+    const hex = '0x' + Array.from(new TextEncoder().encode(entry.message), byte => byte.toString(16).padStart(2, '0')).join('');
+    const signature = await requestWithTimeout(provider, { method: 'personal_sign', params: [hex, this.address] }, 90000);
+    await this.refresh(connection);
+    if (version !== this.version) throw new Error('Your wallet changed. Request a new registration.');
+    return signature;
   }
 }
 

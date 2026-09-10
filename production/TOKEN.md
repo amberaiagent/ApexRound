@@ -1,26 +1,27 @@
-# Activating the access token after launch
+# Final-token activation
 
-The owner will provide the final $APEX contract address after creating it on pons. A copied `0x` address is sufficient input; no seed, private key, token approval or transfer is needed. The example `0xec2976c9c9c5789c425584965c6780671b02792c` is **not** the configured access token.
+The owner supplied and authorized **0xfb57c3f37c6122817981c8ac94b24a1b844f766a**. Real RPC inspection returned **Apex / APEX**, 18 decimals and total supply of 1 billion. The example `0xec2976c9c9c5789c425584965c6780671b02792c` is **not** the configured token. Never activate it as a placeholder.
 
-The chain is Robinhood Chain mainnet (4663). The launchpad documents standard onchain token metadata at https://docs.ponsfamily.com/#reading-token-state. The access check uses `balanceOf(wallet)` on the exact approved contract. A matching ticker/name on another contract does not grant access. Factory provenance, if needed, should be checked against the launch page or the documented factory's launch event; merely exposing ERC-20 methods does not prove that a token was launched on pons.
+The approved network is Robinhood Chain mainnet (4663). Access is tied to the exact contract address, not its name or ticker. See https://docs.ponsfamily.com/#reading-token-state. ERC-20 compatibility alone does not prove launchpad provenance; verify the intended launch identity against the owner's final address.
 
 ## Operator flow
 
-1. Receive the final address from the owner and verify its identity against the intended launch.
-2. Run `node scripts/configure-token.mjs <address>` to inspect it without writing files. The RPC verifies the chain, deployed code, decimals, name, symbol, total supply and balance interface at one block, then checks the block hash again. Amounts use integers. Rich-text trailing whitespace is accepted; malformed/zero addresses are rejected.
-3. Run `node scripts/configure-token.mjs <address> --write` to repeat those checks and atomically generate `dist/lib/access-token.js`. Contract strings are serialized as data, not executed as code. If the checks fail, the current token configuration stays unchanged.
-4. Review the address in the Git diff, run `node --test tests/arena.test.js tests/wallet.test.js tests/token-configuration.test.js`, commit/push and deploy the release using the existing VPS process. Verify the public `lib/access-token.js`, the displayed explorer link and a real wallet balance. Reload the page to load the new configuration.
+1. Receive the final address from the owner. Confirm remaining competition rules and result-pipeline readiness before a real competitive launch.
+2. Inspect without starting anything: `node scripts/configure-token.mjs <FINAL_CA>`. The script verifies chain, bytecode, decimals, metadata, supply, balance interface and block hash.
+3. On the VPS, activate using the existing container:
+   `docker exec apex-api node api/activate.js <FINAL_CA>`
+4. This repeats the onchain checks, writes the verified token and one activation timestamp to the persistent server database, and **immediately starts the main 30:00 timer and opens registration**. The timestamp is set after successful verification, not when inspection begins.
+5. Verify `https://apex-round.com/api/arena` and the page: official CA, registration open, upcoming round #1, one main timer. Open pages refresh within 15 seconds. No rebuild or second countdown is needed.
+6. At activation + 30 minutes, the first 24-hour round starts and entry closes. The main timer switches to the round countdown automatically. Every later round lasts exactly 24 hours; its entry period is the previous round's final hour.
 
-`APEX_RPC_URL` can supply a dedicated HTTPS RPC endpoint to the operator's process. Its value is never saved to public metadata or printed by the tool. Keep any provider API keys out of Git and shell command arguments.
+Repeating activation with the same CA returns the original timestamp. A different CA is refused once launched. Restarting or deploying the API retains the database and timer. There is no public activation/reset endpoint. Never delete or overwrite the live database to change the schedule.
 
-`dist/lib/config.js` imports this one metadata file, so no scattered replacements, build or UI rewrite is needed. An address change must go through the owner/operator flow; the public page does not let visitors choose their own access token. The threshold remains exactly **10,000,000 tokens**, scaled by verified decimals.
+`scripts/configure-token.mjs --write` remains an optional local metadata export for inspection. It **does not activate the live token or timer**. The UI takes the authoritative token and time from `/api/arena`; editing browser files cannot reset a round.
 
-## Verification performed
+`APEX_RPC_URL` optionally supplies a dedicated HTTPS RPC endpoint to the service/operator. Keep it in private server configuration; never commit it, print it or add it to public browser files. No wallet private key, token approval or transfer is required.
 
-The owner's example was inspected read-only on 2026-09-11 local time. The RPC reported name `Æther`, symbol `Æ`, 18 decimals and total supply of 1,000,000,000 tokens. Bytecode and the balance interface passed the checks. No configuration was written and no transaction was sent. The public access-token address remains null until the owner supplies the final $APEX address.
+## Entry acceptance
+The visitor connects their wallet, checks their balance, then separately clicks Join round. They sign a readable EIP-191 message naming the domain, wallet, chain, exact token, round and dates, with a short-lived nonce. The server verifies it and independently reads the latest balance on the approved chain. The threshold is exactly 10,000,000 tokens using verified decimals. Late/duplicate/replayed requests fail even if the browser still shows an enabled button.
 
-Automated checks cover copied addresses, 6/18 decimals, wrong networks, missing code, malformed contract returns, insufficient supply, block reorganization, safe metadata serialization, RPC failures, atomic local writing and the default no-write path.
-
-## What activation enables
-
-The connected user can check the real token balance and see whether the balance requirement is met. Checking does not register the wallet. The competition remains in prelaunch until the authoritative registration backend, schedule and result pipeline are implemented. A future backend must use this same approved chain/address/threshold and re-read the balance through a trusted RPC when accepting registration; client-side eligibility is not an access-control boundary.
+## Current boundaries
+The final-token activation command is authorized by the owner. Check `/api/arena` for its actual timestamp; never infer activation from this document or browser files. Trade ingestion, portfolio valuation, rankings and payouts are separate unfinished work. Activation starts the agreed schedule and registration; it does not create a result pipeline.

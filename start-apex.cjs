@@ -4,8 +4,8 @@ const path = require('node:path');
 const url = 'http://127.0.0.1:4173';
 async function isRunning() {
   try {
-    const response = await fetch(url, { signal: AbortSignal.timeout(1000) });
-    return response.ok && (await response.text()).includes('<title>APEX');
+    const response = await fetch(url + '/api/health', { signal: AbortSignal.timeout(1000) });
+    return response.ok && (await response.json()).ok === true;
   } catch { return false; }
 }
 async function main() {
@@ -14,7 +14,7 @@ async function main() {
     fs.mkdirSync(logs, { recursive: true });
     const output = fs.openSync(path.join(logs, 'local-server.log'), 'a');
     const errors = fs.openSync(path.join(logs, 'local-server-error.log'), 'a');
-    const server = spawn(process.execPath, [path.join(__dirname, 'server.js')], {
+    const server = spawn(process.execPath, ['--experimental-sqlite', path.join(__dirname, 'server.js')], {
       cwd: __dirname, detached: true, windowsHide: true, stdio: ['ignore', output, errors]
     });
     server.unref();

@@ -9,7 +9,6 @@ if (accessToken.address !== null && (!/^0x[0-9a-f]{40}$/i.test(accessToken.addre
   throw new Error('Invalid access token configuration.');
 }
 export const config = Object.freeze({
-  stage: 'prelaunch',
   demo: false,
   ticker: '$APEX',
   required: 10000000n,
@@ -28,7 +27,6 @@ export const config = Object.freeze({
 });
 
 export const pending = [
-  'First round start and daily schedule',
   'Fee source and payout currency',
   'Minimum portfolio, eligible assets and trading venues',
   'Portfolio valuation and treatment of external transfers',

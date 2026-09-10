@@ -4,6 +4,7 @@ import { EventEmitter } from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from '../dist/lib/wallet.js';
 import { config } from '../dist/lib/config.js';
+import { entryMessage } from '../dist/lib/entry-message.js';
 
 const address = '0x1234567890123456789012345678901234567890';
 const other = '0x2234567890123456789012345678901234567890';
@@ -166,9 +167,41 @@ test('Public release has no simulation or fabricated round, pool, or registratio
   const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
   const app = await readFile(new URL('../dist/app.js', import.meta.url), 'utf8');
   assert.equal(config.demo, false);
-  assert.equal(config.stage, 'prelaunch');
   assert.doesNotMatch(html + app, /DemoWallet|demo-connect|setScenario|set_demo_scenario|#042|12\.80|Demo data|Demo results/);
   assert.match(html, /Registration not open/);
   assert.match(html, /AWAITING LAUNCH/);
   assert.doesNotMatch(app, /\.register\(|personal_sign|eth_sendTransaction/);
+});
+
+test('Registration signs only the displayed, domain/token/round-bound message; altered requests never reach the wallet', async () => {
+  const base = {
+    address, origin: 'https://apex-round.com', chainId: 4663, tokenAddress: token,
+    roundId: 1, nonce: 'a'.repeat(48), issuedAt: 1800000000000,
+    expiresAt: 1800000300000, startsAt: 1800001800000, endsAt: 1800088200000,
+  };
+  base.message = entryMessage(base);
+  const provider = new Provider(), wallet = new BrowserWallet();
+  const original = provider.request.bind(provider);
+  provider.request = async args => {
+    if (args.method === 'personal_sign') { provider.calls.push(args); return '0x' + 'a'.repeat(130); }
+    return original(args);
+  };
+  await wallet.connect(provider);
+  for (const change of [{origin:'https://other.example'}, {address:other}, {tokenAddress:other}, {roundId:2}, {message:base.message + ' changed'}, {endsAt:base.endsAt + 1000}, {nonce:'bad'}]) {
+    const entry = {...base,...change};
+    await assert.rejects(wallet.signEntry(entry, {...settings,targetRoundId:1}, base.origin), /details changed/);
+  }
+  assert.equal(provider.calls.filter(c => c.method === 'personal_sign').length, 0);
+  await wallet.signEntry(base, {...settings,targetRoundId:1}, base.origin);
+  const sign = provider.calls.find(c => c.method === 'personal_sign');
+  assert.equal(Buffer.from(sign.params[0].slice(2), 'hex').toString('utf8'), base.message);
+  assert.equal(sign.params[1], address);
+  provider.request = async args => {
+    if (args.method === 'personal_sign') {
+      provider.accounts = [other]; provider.emit('accountsChanged', [other]);
+      return '0x' + 'b'.repeat(130);
+    }
+    return original(args);
+  };
+  await assert.rejects(wallet.signEntry(base, {...settings,targetRoundId:1}, base.origin), /wallet changed/);
 });

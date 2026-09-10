@@ -17,7 +17,7 @@
 <main>
   <section class="hero">
     <div class="hero-copy">
-      <div class="eyebrow"><span class="blue-dot"></span> THE DAILY TRADING ARENA <span class="launch-badge">Coming soon</span></div>
+      <div class="eyebrow"><span class="blue-dot"></span> THE DAILY TRADING ARENA <span id="launch-badge" class="launch-badge">Coming soon</span></div>
       <h1>Earn your <em>place.</em></h1>
       <p>24 hours. Your wallet. Your edge.<br>Rise above +50%. Reach the top 10. Split the fee pool equally.</p>
       <a class="primary" href="#arena">Explore the arena <span>↗</span></a>
@@ -27,24 +27,24 @@
   </section>
   <section id="arena" class="arena">
     <div class="section-heading"><div><div class="eyebrow">THE ARENA</div><h2>One round. Equal opportunity.</h2></div><span class="live-pill awaiting" id="round-status">◇ AWAITING LAUNCH</span></div>
-    <div class="launch-note"><span>THE FIRST SUMMIT</span><p>Real wallets. A fresh start. The first round opens after the launch schedule and final rules are announced.</p></div>
+    <div class="launch-note"><span id="launch-label">THE FIRST SUMMIT</span><p id="launch-note">When the official $APEX token is activated, registration opens for 30 minutes. Then the first 24-hour round begins.</p></div>
     <div class="round-bar">
-      <div><span class="label">CURRENT ROUND</span><strong id="round-number">Not started</strong><span id="round-dates" class="muted">First round to be announced</span></div>
-      <div><span class="label">FIRST ROUND STARTS</span><strong id="timer" class="timer">—</strong><span class="muted">Launch date coming soon</span></div>
+      <div><span id="round-label" class="label">CURRENT ROUND</span><strong id="round-number">Not started</strong><span id="round-dates" class="muted">First round to be announced</span></div>
+      <div><span id="timer-label" class="label">FIRST ROUND STARTS</span><strong id="timer" class="timer">—</strong><span id="timer-note" class="muted">30-minute first entry window</span></div>
       <div><span class="label">ROUND FEE POOL</span><strong id="pool">—</strong><span class="muted">Announced with the round</span></div>
-      <div><span class="label">TRADERS IN THE ARENA</span><strong>0 <small>/ 0 above +50%</small></strong><span class="muted">Registration has not opened</span></div>
+      <div><span id="traders-label" class="label">TRADERS IN THE ARENA</span><strong id="traders">0</strong><span id="traders-note" class="muted">Registration has not opened</span></div>
     </div>
     <div class="arena-body">
       <div class="leaderboard">
         <div class="table-heading"><h3>Leaderboard <span>↗</span></h3><label class="search">⌕ <input id="search" placeholder="Search wallet" aria-label="Search wallet address"></label></div>
-        <div class="table-note"><span>Ranked by verified trading return in ETH.</span><span>Awaiting first round</span></div>
+        <div class="table-note"><span>Ranked by verified trading return in ETH.</span><span id="board-status">Awaiting first round</span></div>
         <div id="table" class="prelaunch-board"><div class="empty"><span class="empty-symbol" aria-hidden="true">↗</span><h3>The summit is open territory.</h3><p id="board-message" aria-live="polite">The leaderboard starts with the first round.</p><p>Trade your way onto it.</p></div></div>
       </div>
       <aside>
         <div class="entry-top"><span class="eyebrow">YOUR NEXT MOVE</span><span class="corner">↗</span></div>
         <h3 id="entry-title">Your place is<br>waiting.</h3>
         <div id="entry-content"><p>Wallet connection requires JavaScript.</p></div>
-        <div class="next-round"><div><span>FIRST ROUND</span><b>Registration not open</b></div><p>Start time and entry window will be announced here.</p></div>
+        <div class="next-round"><div><span id="next-label">FIRST ROUND</span><b id="next-status">Registration not open</b></div><p id="next-start">Starts 30 minutes after the official token is activated.</p></div>
         <div class="entry-rule">10,000,000 $APEX required.<br>Trade on your own wallet. No $APEX locked.</div>
       </aside>
     </div>
@@ -54,7 +54,7 @@
     <div class="how-title"><h2>A level field.<br><em>A higher standard.</em></h2><p>Every trader starts together. Every qualifying place gets the same share. Your performance makes the difference.</p></div>
     <div class="steps">
       <article><span>01 / QUALIFY</span><h3>Hold 10M $APEX.</h3><p>Connect your wallet and check your $APEX balance. Eligibility is a check, not an entry.</p></article>
-      <article><span>02 / COMPETE</span><h3>Make your 24 hours count.</h3><p>Register in the final hour of the current round. Start together. Trade on your own wallet.</p></article>
+      <article><span>02 / COMPETE</span><h3>Make your 24 hours count.</h3><p>The first entry window lasts 30 minutes after token activation. Later, register in the final hour of each round. Everyone starts together.</p></article>
       <article><span>03 / EARN YOUR PLACE</span><h3>Above +50%. Top 10.</h3><p>Finish strictly above +50% in ETH trading return and reach the top 10. Ten winners each receive 10%.</p></article>
     </div>
     <div id="faq" class="faq"></div>
@@ -74,6 +74,7 @@
   <div id="wallet-list"></div>
   <p id="wallet-error" class="outside" role="alert"></p>
   <p class="muted">No signature, approval or payment is requested to connect or read a balance.</p>
+  <p class="muted">Joining a round asks you to sign a message naming that round. The server checks your balance before confirming entry.</p>
 </dialog>
 <div id="toast" role="status"></div>
 <script type="module" src="app.js"></script>

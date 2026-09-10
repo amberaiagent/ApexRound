@@ -1,0 +1,8 @@
+.git
+.env
+.env.*
+.sites-runtime
+node_modules
+data
+tests
+.openai

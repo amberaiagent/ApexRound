@@ -15,6 +15,10 @@
 
 # Dependencies and editor/OS files.
 node_modules/
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
 .vscode/
 .idea/
 .DS_Store
