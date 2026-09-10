@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/arena.test.js",
+    "test": "node --test tests/arena.test.js tests/wallet.test.js",
     "start": "node server.js"
   }
 }

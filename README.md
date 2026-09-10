@@ -1,38 +1,39 @@
 # APEX — Earn your place
 
-## Local use
-Double-click `START-APEX.cmd` to start APEX and open it in your browser. No ChatGPT sign-in is needed. All site files are on this computer in this project; `dist/` contains the website. The server listens only on this computer at http://127.0.0.1:4173.
+## Run locally
+Double-click `START-APEX.cmd`, or run `node server.js` and open http://127.0.0.1:4173. All files are on this computer. No ChatGPT sign-in, installation or build is required. The authored website is in `dist/`.
 
-Development stays local. The chosen delivery path is GitHub for source control and the user's VPS for hosting. Do not publish or update the previous Sites-hosted copy; it is separate and is not needed for this project.
+Run `node --test tests/arena.test.js tests/wallet.test.js` to check wallet behavior and the existing competition policy.
 
-Run `node server.js` and open http://127.0.0.1:4173. No installation or build is required. Run `node --test tests/arena.test.js` for boundary checks. The complete deployable site is in `dist/`.
+## Delivery
+Source: https://github.com/amberaiagent/ApexRound, branch `main`.
+Website: https://apex-round.com, on the owner's VPS with HTTPS.
+`OPEN-VPS-PREVIEW.cmd` opens the VPS through the existing SSH tunnel at http://127.0.0.1:4174.
 
-## GitHub and VPS rollout
-1. Prepare the local repository and run the existing checks.
-2. Connect the user's GitHub repository and push the source.
-3. Configure the user's VPS and domain, then serve `dist/` with HTTPS.
-4. Set up automated delivery once manual deployment is verified.
+Delivery is manual: a GitHub push does not deploy. See `deploy/README.md` for releases, certificates and rollback. Only `dist/` is published. Keep local runtime files, secrets, archives, SSH keys, tests and old hosting metadata out of the public release.
 
-GitHub is connected at https://github.com/amberaiagent/ApexRound, using the `main` branch. The demo is hosted on the user's VPS at https://apex-round.com with HTTPS. Delivery is currently manual; a GitHub push does not automatically deploy. See `deploy/README.md` for server layout, certificates and rollback notes. The website in `dist/` is authored source and is intentionally tracked. Local runtime files, archives, logs, environment secrets and previous hosting metadata are excluded by `.gitignore`. Hosting does not turn the simulation into a real trading service.
+Development stays local and deployment uses GitHub and the owner's VPS. Do not publish or update the previous Sites-hosted copy.
 
-## Scope
-English responsive arena with supplied APEX icon, wallet simulation, separate integer balance check and registration, 24-hour rollover, leaderboard/search, personal results, previous rounds, rules, and demo scenario studio. Both original logo files are preserved in `dist/assets`. The wordmark is dark in the provided image; the dark header combines the original icon with a readable typeset name.
+## Current release: prelaunch
+The public page no longer uses simulated wallets, traders, pools, countdowns or history. It shows the first round as not started.
 
-All balances, competition results, entries and allocations are demo data. State is local to the current page and resets on reload. No wallet extension is contacted and no signatures, token approvals, real transactions or payouts occur. Do not enable this as production merely by changing the demo flag.
+- Real browser-wallet discovery/connection and explicit Robinhood Chain switching.
+- Read-only ERC-20 balance adapter with exact integer arithmetic, block-specific reads, contract/decimals checks and invalidation when the account or chain changes.
+- The token address and decimals are not configured, so balance checks remain unavailable.
+- Registration is closed. There is no competition backend, trade ingestion, live ranking or payment service yet.
+- No signatures, token approvals, token locking or payments are requested.
+- The existing visual design, $APEX branding, responsive layouts and agreed competition rules remain.
 
-## Architecture and production dependencies
-`lib/config.js` holds unresolved integration and rule settings. `lib/rounds.js` is the pure clock/eligibility policy. `lib/providers.js` separates wallet, balance, registration, result and payout providers. `app.js` composes UI state. Token balances and ETH amounts use BigInt; return uses millionths of a percentage point. Display rounding never controls qualification.
+This is a step toward the real service, not a completed production trading arena. See `production/README.md` for the concrete dependencies, sources and validation limits.
 
-Replace demo adapters with verified integrations only after confirming token address, decimals, contract addresses, chain ID, RPC, explorer and wallet support from official documentation. Network configuration is intentionally unset. Define fee source, payout currency, minimum portfolio, eligible venues/assets, tie-breaker, continuous holding requirement, verification/payment timing, eligibility token inclusion, fewer-than-ten and zero-winner policies.
+## Structure
+- `dist/index.html`, `style.css`, `app.js`: public interface.
+- `dist/lib/config.js`: public network/token configuration; never add secrets.
+- `dist/lib/wallet.js`: wallet discovery, permission requests, network switching and informational token reads.
+- `dist/lib/rounds.js`: previously tested pure round policy; no authoritative live schedule is activated.
+- `tests/fixtures/demo-providers.js`: historical simulation fixtures, excluded from deployment.
 
-Production registration needs authoritative server/contract time, a round-scoped nonce and expiry, human-readable signed entry message, wallet signature verification, chain and balance validation, replay protection, and a durable unique constraint on (roundId, wallet). Recheck entry window on acceptance. Local demo entries are intentionally not a security boundary.
+Production entry acceptance must recheck time and balances on a trusted server or contract. User-device time, an address returned by an extension and a browser balance read cannot authorize an entry. Portfolio returns must exclude external funding and value open positions using agreed prices. Payment status must be based on confirmed receipts.
 
-A production result provider must ingest trades, transfers and open positions with stable block references. Value the entire eligible portfolio in ETH using approved price sources and observation times; remove external deposit/withdrawal effects using an agreed cash-flow-adjusted methodology. Define illiquid/stale quotes, manipulation checks, reorg/finality handling, decimals, and inclusion of $APEX. Do not compare raw starting/ending ETH balances. Archive valuation inputs for reproducible review. Resolve ties and disputed data before finalization.
-
-Payout records must be separate from result finalization, and require confirmed chain receipts before Paid is displayed. No distribution contract is implemented. Explorer links require both a configured explorer and real hash. Current demo history is finalized but unpaid.
-
-Demo schedule anchors to noon in America/New_York, then uses exact 86,400,000ms rounds. ET and device-local times are displayed. A fixed noon ET schedule cannot also preserve 24-hour rounds at DST boundaries: choose and document a production policy before launch. User device time is only acceptable in this marked simulation.
-
-## QA
-Automated checks cover entry-window boundaries, rollover, strict +50%, precision, top-ten qualification, ten equal shares, duplicate/stale entry, insufficient balance, and winter/summer ET offsets. Browser verification is recorded in the delivery message. WebMCP exposes read_arena and set_demo_scenario using the same state as the UI.
-
+## Validation
+16 automated tests cover the existing rule boundaries and new wallet integration. Desktop/mobile browser checks cover prelaunch state, absent-wallet guidance, dialog interaction, search and FAQ. The QA browser has no installed wallet: actual extension approval and $APEX onchain reads are still unverified. The contract address is required for that next step.

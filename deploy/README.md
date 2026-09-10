@@ -2,7 +2,7 @@
 
 Public address: https://apex-round.com. Cloudflare proxies the root domain and `www` to the existing VPS. Both HTTP and `www` redirect to the canonical HTTPS root domain.
 
-The website is still the clearly marked demo. Hosting and certificates do not activate live trading, balances, entries or payouts.
+The website is in prelaunch: genuine browser-wallet connection, no fabricated rounds, results or pool. Token verification is gated until the owner supplies the contract address and its decimals are verified. Competition registration, portfolio ingestion and payments are not active. See `production/README.md` for the remaining launch dependencies.
 
 ## Server layout
 - Authored assets: `dist/` in this repository.
@@ -17,7 +17,7 @@ The website is still the clearly marked demo. Hosting and certificates do not ac
 Cloudflare must use **Full (strict)** encryption. Its edge certificate is separate from the Let's Encrypt certificate on the VPS. Do not use Flexible. HTTPS/HTTP origin ports remain restricted to Cloudflare, and SSH remains available for administration.
 
 ## Updating the site
-Deployment is currently manual; pushing to GitHub alone does not update the VPS. Export the desired commit's `dist/` to a fresh release directory, verify its assets, switch `current` to that directory, and verify the public page. Keep the previous release for rollback. APEX does not require a Node runtime on the VPS while it is a static demo.
+Deployment is currently manual; pushing to GitHub alone does not update the VPS. Export the desired commit's `dist/` to a fresh release directory, verify its assets, switch `current` to that directory, and verify the public page. Keep the previous release for rollback. APEX does not require a Node runtime on the VPS while it is a static prelaunch site. Only `dist/` is public; tests and historical simulation fixtures must not be served. Point the loopback preview at `current` so port 4174 shows the active release as well.
 
 For a renewal check, use `certbot renew --cert-name apex-round.com --dry-run --run-deploy-hooks --no-random-sleep-on-renew`. Do not repeatedly request production certificates for testing.
 

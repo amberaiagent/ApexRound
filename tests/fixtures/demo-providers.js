@@ -1,5 +1,6 @@
-import {config} from './config.js';
-import {getRound} from './rounds.js';
+// Historical simulation fixtures. Never include this directory in a VPS release.
+import {config} from '../../dist/lib/config.js';
+import {getRound} from '../../dist/lib/rounds.js';
 export const demoAddress='0xa7e4000000000000000000000000000000008f2c';
 const delay=()=>new Promise(r=>setTimeout(r,350));
 export class DemoWalletProvider{async connect(mode){await delay();if(mode==='connection-error')throw Error('Wallet connection failed. Try another demo scenario.');return demoAddress;}}
