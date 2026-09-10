@@ -13,7 +13,7 @@ Run `node server.js` and open http://127.0.0.1:4173. No installation or build is
 3. Configure the user's VPS and domain, then serve `dist/` with HTTPS.
 4. Set up automated delivery once manual deployment is verified.
 
-GitHub and VPS are not connected yet. The website in `dist/` is authored source and is intentionally tracked. Local runtime files, archives, logs, environment secrets and previous hosting metadata are excluded by `.gitignore`. Hosting does not turn the simulation into a real trading service.
+GitHub is connected at https://github.com/amberaiagent/ApexRound, using the `main` branch. The VPS is not connected yet. The website in `dist/` is authored source and is intentionally tracked. Local runtime files, archives, logs, environment secrets and previous hosting metadata are excluded by `.gitignore`. Hosting does not turn the simulation into a real trading service.
 
 ## Scope
 English responsive arena with supplied APEX icon, wallet simulation, separate integer balance check and registration, 24-hour rollover, leaderboard/search, personal results, previous rounds, rules, and demo scenario studio. Both original logo files are preserved in `dist/assets`. The wordmark is dark in the provided image; the dark header combines the original icon with a readable typeset name.
