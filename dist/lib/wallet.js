@@ -1,4 +1,4 @@
-import { entryMessage } from './entry-message.js';
+import { entryMessage } from './entry-message.js?v=arena-token-20260914';
 const isAddress = value => typeof value === 'string' && /^0x[0-9a-f]{40}$/i.test(value);
 const account = accounts => Array.isArray(accounts) && isAddress(accounts[0]) ? accounts[0].toLowerCase() : null;
 const chain = value => {
@@ -158,7 +158,7 @@ export class BrowserWallet {
 
   async checkBalance(settings) {
     if (!isAddress(settings.tokenAddress) || /^0x0{40}$/i.test(settings.tokenAddress)) {
-      throw new Error('The $APEX token contract has not been announced yet.');
+      throw new Error('The $ARENA token contract has not been announced yet.');
     }
     if (!Number.isInteger(settings.decimals) || settings.decimals < 0 || settings.decimals > 255) {
       throw new Error('Token verification is not configured yet.');

@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { verifyMessage } from 'ethers';
 import { scheduleAt } from '../dist/lib/schedule.js';
-import { entryMessage } from '../dist/lib/entry-message.js';
+import { entryMessage, ENTRY_MESSAGE_VERSION } from '../dist/lib/entry-message.js';
 import { normalizeAddress, uint256 } from '../scripts/lib/token-inspection.mjs';
 
 export class ApiError extends Error {
@@ -28,7 +28,7 @@ export async function readEligibility(token, address, rpc, now = Date.now) {
   ]);
   if (!/^0x[0-9a-f]+$/i.test(code) || /^0x0*$/i.test(code) || uint256(decimals, 'decimals') !== BigInt(token.decimals)) fail(503, 'Token details could not be verified.');
   const balance = uint256(raw, 'balance'), required = 10000000n * 10n ** BigInt(token.decimals);
-  if (balance < required) fail(403, 'Insufficient balance. Hold at least 10,000,000 $APEX to register.');
+  if (balance < required) fail(403, 'Insufficient balance. Hold at least 10,000,000 $ARENA to register.');
   const again = await rpc('eth_getBlockByNumber', [block.number, false]);
   if (again?.hash?.toLowerCase() !== block.hash.toLowerCase()) fail(503, 'Chain state changed. Please try again.');
   return { balance: balance.toString(), block: block.number, blockHash: block.hash };
@@ -63,6 +63,7 @@ export class ArenaService {
     const state = this.assertOpen(roundId);
     if (this.store.entry(roundId, address)) fail(409, 'This wallet is already registered for this round.');
     const entry = {
+      messageVersion: ENTRY_MESSAGE_VERSION,
       nonce: randomBytes(24).toString('hex'), address, roundId, origin,
       chainId: state.token.chainId, tokenAddress: state.token.address,
       startsAt: state.next.start, endsAt: state.next.end,

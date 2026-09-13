@@ -1,5 +1,5 @@
-import { config, pending } from './lib/config.js';
-import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from './lib/wallet.js';
+import { config, pending } from './lib/config.js?v=arena-token-20260914';
+import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from './lib/wallet.js?v=arena-token-20260914';
 import { scheduleAt, countdown } from './lib/schedule.js';
 
 const $ = selector => document.querySelector(selector);
@@ -91,7 +91,7 @@ function renderArena() {
   $('#timer').textContent = first && remaining !== '—' ? remaining.slice(3) : remaining;
   $('#timer-note').textContent = !ready && arena ? 'Synchronizing with the arena' : first ? 'Round #1 starts when this reaches zero' : schedule.current ? '24-hour trading round' : '30-minute first entry window';
   $('#launch-label').textContent = first ? 'REGISTRATION IS OPEN' : schedule.current ? 'THE ROUND IS LIVE' : 'THE FIRST ROUND';
-  $('#launch-note').textContent = syncError || (first ? 'Hold 10M $APEX, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $APEX token is activated, the main timer starts at 30:00 and registration opens. At zero, the first 24-hour round begins.');
+  $('#launch-note').textContent = syncError || (first ? 'Hold 10M $ARENA, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $ARENA token is activated, the main timer starts at 30:00 and registration opens. At zero, the first 24-hour round begins.');
   $('#traders-label').textContent = first ? 'REGISTERED FOR ROUND #1' : 'TRADERS IN THE ARENA';
   const count = first ? arena?.nextParticipants : arena?.current?.id === schedule.current?.id ? arena?.participants : arena?.next?.id === schedule.current?.id ? arena?.nextParticipants : 0;
   $('#traders').textContent = ready ? String(count ?? 0) : '—';
@@ -112,7 +112,7 @@ function renderEntry() {
   const panel = $('#entry-content');
   panel.replaceChildren();
   if (!wallet.address) {
-    panel.append(text('p', settings.tokenAddress ? 'Connect your wallet, check your 10M $APEX balance and register during the entry period.' : 'Connect your wallet to get ready. The official $APEX token has not been activated yet.'));
+    panel.append(text('p', settings.tokenAddress ? 'Connect your wallet, check your 10M $ARENA balance and register during the entry period.' : 'Connect your wallet to get ready. The official $ARENA token has not been activated yet.'));
     panel.append(button('Connect wallet ↗', openWallets));
   } else {
     panel.append(text('p', 'Connected: ' + short(wallet.address), 'wallet-address'));
@@ -120,13 +120,13 @@ function renderEntry() {
     if (currentEntry) panel.append(text('p', 'Participating in round #' + currentEntry.roundId + '. Trading results are pending.', 'return'));
     if (wallet.chainId !== settings.network.chainId) {
       panel.append(text('p', 'Your wallet is on a different network. ARENA uses Robinhood Chain.', 'outside'));
-      panel.append(button(busy === 'network' ? 'Check your wallet…' : 'Switch to Robinhood Chain ↗', switchNetwork));
+      panel.append(button(busy === 'network' ? 'Check your wallet…' : 'Switch to Robinhood Chain', switchNetwork));
     } else {
       panel.append(text('p', 'Robinhood Chain connected', 'return'));
       if (!settings.tokenAddress || settings.decimals === null) {
-        panel.append(text('p', '$APEX token details are coming soon. The main timer and registration start after the official contract is activated.'));
+        panel.append(text('p', '$ARENA token details are coming soon. The main timer and registration start after the official contract is activated.'));
       } else {
-        const token = text('a', 'View $APEX contract ↗', 'token-link');
+        const token = text('a', 'View $ARENA contract ↗', 'token-link');
         token.href = settings.network.blockExplorerUrls[0] + '/address/' + settings.tokenAddress;
         token.target = '_blank'; token.rel = 'noopener noreferrer';
         panel.append(token);
@@ -135,13 +135,13 @@ function renderEntry() {
           panel.append(text('p', 'Starts ' + when(schedule.next.start) + '. Your entry is saved.'));
         } else {
           if (snapshot) {
-            panel.append(text('p', snapshot.eligible ? '✓ Balance requirement met' : 'Insufficient $APEX balance', snapshot.eligible ? 'return' : 'outside'));
-            panel.append(text('p', 'Your balance: ' + formatTokens(snapshot.balance, settings.decimals) + ' $APEX'));
-            if (!snapshot.eligible) panel.append(text('p', 'Missing: ' + formatTokens(snapshot.missing, settings.decimals) + ' $APEX'));
+            panel.append(text('p', snapshot.eligible ? '✓ Balance requirement met' : 'Insufficient $ARENA balance', snapshot.eligible ? 'return' : 'outside'));
+            panel.append(text('p', 'Your balance: ' + formatTokens(snapshot.balance, settings.decimals) + ' $ARENA'));
+            if (!snapshot.eligible) panel.append(text('p', 'Missing: ' + formatTokens(snapshot.missing, settings.decimals) + ' $ARENA'));
           } else {
-            panel.append(text('p', 'Required: 10,000,000 $APEX. Checking your balance and registering are separate actions.'));
+            panel.append(text('p', 'Required: 10,000,000 $ARENA. Checking your balance and registering are separate actions.'));
           }
-          panel.append(button(busy === 'balance' ? 'Checking balance…' : snapshot ? 'Refresh balance ↗' : 'Check balance ↗', checkBalance));
+          panel.append(button(busy === 'balance' ? 'Checking balance…' : snapshot ? 'Refresh balance' : 'Check balance', checkBalance));
           const isOpen = fresh() && schedule.registration?.open;
           const join = button(busy === 'join' ? 'Confirming registration…' : isOpen ? 'Join round #' + schedule.next.id + ' ↗' : 'Registration not open', joinRound);
           join.disabled = !!busy || !isOpen || !snapshot?.eligible;
@@ -165,7 +165,7 @@ function renderWallets() {
   if (!discovery.items.length) {
     list.append(text('p','No browser wallet detected. Open this site in a browser with an EVM wallet extension, or use your wallet’s built-in browser.'));
     list.append(button('Look for wallets again ↻', () => discovery.request(), 'outline'));
-  } else for (const item of discovery.items) list.append(button(busy === 'connect' ? 'Check your wallet…' : item.name + ' ↗', () => connect(item.provider), 'outline wallet-option'));
+  } else for (const item of discovery.items) list.append(button(busy === 'connect' ? 'Check your wallet…' : item.name, () => connect(item.provider), 'outline wallet-option'));
 }
 function openWallets() {
   if (busy) return;
@@ -207,8 +207,8 @@ async function joinRound() {
   finally { busy = ''; await refreshArena(); renderEntry(); }
 }
 const faq = {
-  'When does the first round start?': 'Activating the official $APEX token starts the main arena timer at 30:00 and opens registration. At zero, registration closes and the same timer switches to the first 24-hour trading round.',
-  'When can I join?': 'The first registration period lasts 30 minutes after token activation. For subsequent rounds, registration opens in the final hour of the current round. Check your 10M $APEX balance, then register separately.',
+  'When does the first round start?': 'Activating the official $ARENA token starts the main arena timer at 30:00 and opens registration. At zero, registration closes and the same timer switches to the first 24-hour trading round.',
+  'When can I join?': 'The first registration period lasts 30 minutes after token activation. For subsequent rounds, registration opens in the final hour of the current round. Check your 10M $ARENA balance, then register separately.',
   'Can I join a round after it starts?': 'No. Everyone starts together. The server rejects entries once the round starts.',
   'Does refreshing the page reset the timer?': 'No. Everyone shares one server schedule. Refreshing a page or restarting the site does not restart registration.',
   'Does +50% qualify?': 'No. Trading return measured in ETH must be strictly above +50%. Exactly +50% does not qualify.',

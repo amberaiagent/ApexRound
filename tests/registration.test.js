@@ -9,6 +9,9 @@ import { ArenaStore } from '../api/store.js';
 import { ArenaService, readEligibility } from '../api/service.js';
 import { createApiHandler } from '../api/http.js';
 import { scheduleAt, countdown, FIRST_ENTRY_MS, ROUND_MS } from '../dist/lib/schedule.js';
+import { entryMessage, ENTRY_MESSAGE_VERSION } from '../dist/lib/entry-message.js';
+import { BrowserWallet } from '../dist/lib/wallet.js';
+import { config } from '../dist/lib/config.js';
 
 const start = Date.UTC(2026, 8, 11, 12);
 const origin = 'https://apex-round.com';
@@ -124,6 +127,110 @@ test('Concurrent signed requests for one wallet accept exactly one entry', async
   assert.equal(store.count(1), 1);
 });
 
+test('New ARENA challenge version is persisted and only its exact text can be registered', async t => {
+  const { store, service } = fixture(t); store.activate(token, start);
+  const wallet = Wallet.createRandom();
+  const challenge = service.challenge({ address: wallet.address, roundId: 1 }, origin);
+  assert.equal(challenge.messageVersion, 2);
+  assert.equal(challenge.messageVersion, ENTRY_MESSAGE_VERSION);
+  assert.equal(store.challenge(challenge.nonce).messageVersion, 2);
+  assert.match(challenge.message, /^ARENA round registration\n/);
+  assert.match(challenge.message, /\nRequired balance: 10000000 ARENA tokens\n/);
+  assert.doesNotMatch(challenge.message, /APEX/);
+  const legacyText = entryMessage({ ...challenge, messageVersion: 1 });
+  await assert.rejects(service.register({
+    nonce: challenge.nonce, messageVersion: 1, signature: await wallet.signMessage(legacyText),
+  }, origin), status(401));
+  const signature = await wallet.signMessage(challenge.message);
+  // Client version fields cannot replace the version already bound to this nonce.
+  await service.register({ nonce: challenge.nonce, messageVersion: 1, signature }, origin);
+  const saved = store.db.prepare('SELECT message, signature FROM entries WHERE round_id=1 AND address=?')
+    .get(wallet.address.toLowerCase());
+  assert.equal(saved.message, challenge.message);
+  assert.equal(saved.signature, signature);
+  assert.deepEqual(store.launch(), { token, activatedAt: start });
+});
+
+test('Unversioned legacy signatures remain valid after restart without rewriting prior entries or launch data', async t => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'apex-message-compatibility-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const filename = path.join(dir, 'arena.sqlite');
+  let store = new ArenaStore(filename);
+  try {
+    store.activate(token, start);
+    const wallet = Wallet.createRandom(), address = wallet.address.toLowerCase();
+    const legacy = {
+      nonce: 'b'.repeat(48), address, roundId: 1, origin, chainId: token.chainId,
+      tokenAddress: token.address, startsAt: start + FIRST_ENTRY_MS,
+      endsAt: start + FIRST_ENTRY_MS + ROUND_MS, issuedAt: start, expiresAt: start + 300000,
+    };
+    // Frozen previous-release format: compatibility must preserve every byte.
+    const oldMessage = [
+      'APEX round registration', 'Website: ' + origin, 'Wallet: ' + address,
+      'Network: Robinhood Chain (4663)', 'Round: #1',
+      'Trading starts: 2026-09-11T12:30:00.000Z', 'Trading ends: 2026-09-12T12:30:00.000Z',
+      'Access token: ' + token.address, 'Required balance: 10000000 APEX tokens',
+      'Register this wallet for this round only. This does not authorize a payment, token approval or transfer.',
+      'Nonce: ' + legacy.nonce, 'Issued at: 2026-09-11T12:00:00.000Z',
+      'Expires at: 2026-09-11T12:05:00.000Z',
+    ].join('\n');
+    assert.equal(entryMessage(legacy), oldMessage);
+    store.saveChallenge(legacy);
+    const priorAddress = Wallet.createRandom().address.toLowerCase();
+    store.db.prepare('INSERT INTO entries VALUES(?,?,?,?,?,?,?,?)').run(1, priorAddress,
+      start, balance.balance, balance.block, balance.blockHash, 'prior signed bytes', 'prior signature');
+    const oldSignature = await wallet.signMessage(oldMessage);
+    store.close(); store = new ArenaStore(filename);
+    assert.equal(store.challenge(legacy.nonce).messageVersion, undefined);
+    const service = new ArenaService(store, { now: () => start + 1000, eligibility: async () => balance });
+    // Rebranding a legacy payload is not permission to accept different signed text.
+    const changedText = entryMessage({ ...legacy, messageVersion: 2 });
+    await assert.rejects(service.register({ nonce: legacy.nonce, messageVersion: 2,
+      signature: await wallet.signMessage(changedText) }, origin), status(401));
+    await service.register({ nonce: legacy.nonce, signature: oldSignature }, origin);
+    await assert.rejects(service.register({ nonce: legacy.nonce, signature: oldSignature }, origin), status(409));
+    const accepted = store.db.prepare('SELECT message, signature FROM entries WHERE address=?').get(address);
+    assert.equal(accepted.message, oldMessage);
+    assert.equal(accepted.signature, oldSignature);
+    const prior = store.db.prepare('SELECT message, signature FROM entries WHERE address=?').get(priorAddress);
+    assert.equal(prior.message, 'prior signed bytes');
+    assert.equal(prior.signature, 'prior signature');
+    assert.deepEqual(store.launch(), { token, activatedAt: start });
+    assert.equal(store.count(1), 2);
+  } finally { store.close(); }
+});
+
+test('Browser validates both legacy and ARENA messages but never signs a version/text mismatch or unknown version', async t => {
+  const { store, service } = fixture(t); store.activate(token, start);
+  const signer = Wallet.createRandom(), address = signer.address.toLowerCase(), signedMessages = [];
+  const provider = { request: async ({ method, params }) => {
+    if (method === 'eth_requestAccounts' || method === 'eth_accounts') return [address];
+    if (method === 'eth_chainId') return config.network.chainId;
+    if (method === 'personal_sign') {
+      const message = Buffer.from(params[0].slice(2), 'hex').toString('utf8');
+      signedMessages.push(message);
+      return signer.signMessage(message);
+    }
+    throw Error('Unexpected RPC method: ' + method);
+  } };
+  const browser = new BrowserWallet();
+  await browser.connect(provider); t.after(() => browser.disconnect());
+  const challenge = service.challenge({ address, roundId: 1 }, origin);
+  const settings = { ...config, tokenAddress: token.address, decimals: token.decimals, targetRoundId: 1 };
+  const legacy = { ...challenge }; delete legacy.messageVersion;
+  legacy.message = entryMessage(legacy);
+  await browser.signEntry(legacy, settings, origin);
+  const signature = await browser.signEntry(challenge, settings, origin);
+  assert.deepEqual(signedMessages, [legacy.message, challenge.message]);
+  for (const altered of [
+    { ...challenge, messageVersion: 1 }, { ...legacy, messageVersion: 2 },
+    ...[null, 0, 3, '2', true].map(messageVersion => ({ ...challenge, messageVersion })),
+  ]) await assert.rejects(browser.signEntry(altered, settings, origin), /details changed|Unsupported registration message version/);
+  assert.equal(signedMessages.length, 2);
+  await service.register({ nonce: challenge.nonce, signature }, origin);
+  assert.equal(store.count(1), 1);
+});
+
 test('Trusted balance verification enforces exact threshold and rejects bad chain, stale blocks and reorgs', async () => {
   for (const fault of [null, 'short', 'chain', 'stale', 'future', 'reorg', 'code', 'decimals']) {
     const calls = [];
@@ -135,7 +242,14 @@ test('Trusted balance verification enforces exact threshold and rejects bad chai
       if (method === 'eth_call') return params[0].data === '0x313ce567' ? word(fault === 'decimals' ? 6 : 18) : word(required - (fault === 'short' ? 1n : 0n));
       throw Error('Unexpected RPC');
     };
-    if (fault) await assert.rejects(readEligibility(token, token.address, rpc, () => start), status(fault === 'short' ? 403 : 503));
+    if (fault) await assert.rejects(readEligibility(token, token.address, rpc, () => start), error => {
+      assert.equal(error.status, fault === 'short' ? 403 : 503);
+      if (fault === 'short') {
+        assert.match(error.message, /10,000,000 \$ARENA/);
+        assert.doesNotMatch(error.message, /APEX/);
+      }
+      return true;
+    });
     else {
       assert.deepEqual(await readEligibility(token, token.address, rpc, () => start), balance);
       assert.ok(calls.filter(c => ['eth_getCode', 'eth_call'].includes(c.method)).every(c => c.params[1] === '0x123'));

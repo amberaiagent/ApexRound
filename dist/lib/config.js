@@ -10,7 +10,7 @@ if (accessToken.address !== null && (!/^0x[0-9a-f]{40}$/i.test(accessToken.addre
 }
 export const config = Object.freeze({
   demo: false,
-  ticker: '$APEX',
+  ticker: '$ARENA',
   required: 10000000n,
   tokenAddress: accessToken.address,
   decimals: accessToken.decimals,
@@ -32,7 +32,7 @@ export const pending = [
   'Portfolio valuation and treatment of external transfers',
   'Tie-breaking',
   'Result review and payment timing',
-  'Whether 10M $APEX must be held throughout the round',
+  'Whether 10M $ARENA must be held throughout the round',
   'Distribution with fewer than ten or no qualifiers',
-  'Whether $APEX is included in the trading portfolio',
+  'Whether $ARENA is included in the trading portfolio',
 ];
