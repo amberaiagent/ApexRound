@@ -90,7 +90,7 @@ function renderArena() {
   const remaining = ready && end ? countdown(end - serverNow()) : '—';
   $('#timer').textContent = first && remaining !== '—' ? remaining.slice(3) : remaining;
   $('#timer-note').textContent = !ready && arena ? 'Synchronizing with the arena' : first ? 'Round #1 starts when this reaches zero' : schedule.current ? '24-hour trading round' : '30-minute first entry window';
-  $('#launch-label').textContent = first ? 'REGISTRATION IS OPEN' : schedule.current ? 'THE ROUND IS LIVE' : 'THE FIRST SUMMIT';
+  $('#launch-label').textContent = first ? 'REGISTRATION IS OPEN' : schedule.current ? 'THE ROUND IS LIVE' : 'THE FIRST ROUND';
   $('#launch-note').textContent = syncError || (first ? 'Hold 10M $APEX, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $APEX token is activated, the main timer starts at 30:00 and registration opens. At zero, the first 24-hour round begins.');
   $('#traders-label').textContent = first ? 'REGISTERED FOR ROUND #1' : 'TRADERS IN THE ARENA';
   const count = first ? arena?.nextParticipants : arena?.current?.id === schedule.current?.id ? arena?.participants : arena?.next?.id === schedule.current?.id ? arena?.nextParticipants : 0;
@@ -108,7 +108,7 @@ function renderEntry() {
   const schedule = view(), registered = targetEntry(schedule);
   $('#connect').textContent = wallet.address ? short(wallet.address) + ' · Disconnect' : 'Connect wallet ↗';
   $('#connect').disabled = !!busy;
-  $('#entry-title').innerHTML = registered ? 'You’re on<br>the list.' : wallet.address ? 'Your next<br>summit.' : 'Your place is<br>waiting.';
+  $('#entry-title').innerHTML = registered ? 'You’re on<br>the list.' : wallet.address ? 'Your next<br>round.' : 'Your place is<br>waiting.';
   const panel = $('#entry-content');
   panel.replaceChildren();
   if (!wallet.address) {
@@ -119,7 +119,7 @@ function renderEntry() {
     const currentEntry = [arena?.myCurrentEntry,arena?.myNextEntry].find(entry => entry?.roundId === schedule.current?.id);
     if (currentEntry) panel.append(text('p', 'Participating in round #' + currentEntry.roundId + '. Trading results are pending.', 'return'));
     if (wallet.chainId !== settings.network.chainId) {
-      panel.append(text('p', 'Your wallet is on a different network. APEX uses Robinhood Chain.', 'outside'));
+      panel.append(text('p', 'Your wallet is on a different network. ARENA uses Robinhood Chain.', 'outside'));
       panel.append(button(busy === 'network' ? 'Check your wallet…' : 'Switch to Robinhood Chain ↗', switchNetwork));
     } else {
       panel.append(text('p', 'Robinhood Chain connected', 'return'));

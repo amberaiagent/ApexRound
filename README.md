@@ -1,4 +1,6 @@
-# APEX — Earn your place
+# ARENA — Your edge. Your arena.
+
+The public brand is now **ARENA**, with the supplied logo, `#f4f4f4` background and `#7d6db3` accent. The interface uses large sans-serif typography and geometric layouts. The deployed access token remains `$APEX` at the owner-approved contract below; its onchain name, signed-message format and stored launch time are unchanged. For a design-only update, use `deploy/static.py` as documented in `deploy/README.md`.
 
 ## Run locally
 Double-click `START-APEX.cmd`, or run `npm ci` once, then `npm start` and open http://127.0.0.1:4173. Node 22.12+ is required locally; Node 24 runs the VPS service. The authored website is in `dist/`. There is no ChatGPT sign-in or frontend build.

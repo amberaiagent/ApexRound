@@ -3,73 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="APEX: daily 24-hour trading competitions on Robinhood Chain. The first round is coming soon. Earn your place.">
-  <title>APEX — Earn your place.</title>
-  <link rel="icon" href="assets/icon.png">
-  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#f4f4f4">
+  <meta name="description" content="ARENA is the daily trading competition on Robinhood Chain. Your wallet. Your edge. 24 hours to earn your place.">
+  <title>ARENA — Your edge. Your arena.</title>
+  <link rel="icon" type="image/png" href="assets/arena-logo.png">
+  <link rel="stylesheet" href="style.css?v=arena-20260914">
 </head>
 <body>
+<a class="skip-link" href="#arena">Skip to the arena</a>
 <header>
-  <a class="brand" href="#" aria-label="APEX home"><span class="logo-icon"><img src="assets/icon.png" alt=""></span><span>Apex</span></a>
-  <nav><a class="active" href="#arena">Arena</a><a href="#how">How it works</a><a href="#history">Past rounds</a></nav>
+  <a class="brand" href="#" aria-label="ARENA home"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000"></span><span>ARENA</span></a>
+  <nav aria-label="Main navigation"><a href="#arena">The arena</a><a href="#how">How it works</a><a href="#history">Past rounds</a></nav>
   <button id="connect" class="outline">Connect wallet ↗</button>
 </header>
 <main>
-  <section class="hero">
+  <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <div class="eyebrow"><span class="blue-dot"></span> THE DAILY TRADING ARENA <span id="launch-badge" class="launch-badge">Coming soon</span></div>
-      <h1>Earn your <em>place.</em></h1>
-      <p>24 hours. Your wallet. Your edge.<br>Rise above +50%. Reach the top 10. Split the fee pool equally.</p>
-      <a class="primary" href="#arena">Explore the arena <span>↗</span></a>
-      <div class="chain">ON ROBINHOOD CHAIN <span>· Independent project</span></div>
+      <div class="eyebrow"><span class="status-dot"></span> THE DAILY TRADING COMPETITION</div>
+      <h1 id="hero-title">Your edge.<br><span>Your arena.</span></h1>
+      <p>A level playing field. An open opportunity.<br>24 hours to turn your trading into a place at the top.</p>
+      <a class="primary" href="#arena">Enter the arena <span aria-hidden="true">↗</span></a>
+      <div class="hero-bottom"><span class="chain"><span class="chain-dot"></span> Built on Robinhood Chain</span><span id="launch-badge" class="launch-badge">Coming soon</span></div>
     </div>
-    <div class="hero-art" aria-hidden="true"><div class="pixel-field"></div><span class="art-caption">THE TOP IS EARNED.</span><div class="peak-mark">↗</div></div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="art-top"><span>THE EDGE IS YOURS.</span><span>↗</span></div>
+      <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+      <div class="brand-disc"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000"></span></div>
+      <div class="art-bottom"><span>Everyone starts together.<br>Where you finish is up to you.</span><span class="art-arrow">↗</span></div>
+    </div>
   </section>
+  <div class="principles" aria-label="Competition principles">
+    <div><span class="mini-index">01</span><p>Your wallet.<br><strong>Your control.</strong></p><span aria-hidden="true">↗</span></div>
+    <div><span class="mini-index">02</span><p>One starting line.<br><strong>24 hours to compete.</strong></p><span aria-hidden="true">↗</span></div>
+    <div><span class="mini-index">03</span><p>Performance first.<br><strong>Equal shares for winners.</strong></p><span aria-hidden="true">↗</span></div>
+  </div>
   <section id="arena" class="arena">
-    <div class="section-heading"><div><div class="eyebrow">THE ARENA</div><h2>One round. Equal opportunity.</h2></div><span class="live-pill awaiting" id="round-status">◇ AWAITING LAUNCH</span></div>
-    <div class="launch-note"><span id="launch-label">THE FIRST SUMMIT</span><p id="launch-note">When the official $APEX token is activated, registration opens for 30 minutes. Then the first 24-hour round begins.</p></div>
+    <div class="section-heading"><div><div class="eyebrow">01 / THE ARENA</div><h2>One round.<br>Every opportunity.</h2></div><div class="heading-side"><span class="live-pill awaiting" id="round-status">◇ AWAITING LAUNCH</span><p>A fresh start every 24 hours.<br>Make your next move count.</p></div></div>
+    <div class="launch-note"><span id="launch-label">THE FIRST ROUND</span><p id="launch-note">When the official $APEX token is activated, registration opens for 30 minutes. Then the first 24-hour round begins.</p></div>
     <div class="round-bar">
       <div><span id="round-label" class="label">CURRENT ROUND</span><strong id="round-number">Not started</strong><span id="round-dates" class="muted">First round to be announced</span></div>
-      <div><span id="timer-label" class="label">FIRST ROUND STARTS</span><strong id="timer" class="timer">—</strong><span id="timer-note" class="muted">30-minute first entry window</span></div>
+      <div class="timer-tile"><span id="timer-label" class="label">FIRST ROUND STARTS</span><strong id="timer" class="timer">—</strong><span id="timer-note" class="muted">30-minute first entry window</span></div>
       <div><span class="label">ROUND FEE POOL</span><strong id="pool">—</strong><span class="muted">Announced with the round</span></div>
       <div><span id="traders-label" class="label">TRADERS IN THE ARENA</span><strong id="traders">0</strong><span id="traders-note" class="muted">Registration has not opened</span></div>
     </div>
     <div class="arena-body">
       <div class="leaderboard">
-        <div class="table-heading"><h3>Leaderboard <span>↗</span></h3><label class="search">⌕ <input id="search" placeholder="Search wallet" aria-label="Search wallet address"></label></div>
-        <div class="table-note"><span>Ranked by verified trading return in ETH.</span><span id="board-status">Awaiting first round</span></div>
-        <div id="table" class="prelaunch-board"><div class="empty"><span class="empty-symbol" aria-hidden="true">↗</span><h3>The summit is open territory.</h3><p id="board-message" aria-live="polite">The leaderboard starts with the first round.</p><p>Trade your way onto it.</p></div></div>
+        <div class="table-heading"><h3>The leaderboard<span aria-hidden="true">↗</span></h3><label class="search"><span aria-hidden="true">⌕</span><input id="search" placeholder="Search wallet" aria-label="Search wallet address"></label></div>
+        <div class="table-note"><span>Trading return, measured in ETH.</span><span id="board-status">Awaiting first round</span></div>
+        <div id="table" class="prelaunch-board"><div class="empty"><div class="empty-emblem" aria-hidden="true"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000" loading="lazy"></span></div><span class="eyebrow">THE NEXT NAME COULD BE YOURS</span><h3>A place at the top.</h3><p id="board-message" aria-live="polite">Verified results will appear here.</p></div></div>
       </div>
-      <aside>
-        <div class="entry-top"><span class="eyebrow">YOUR NEXT MOVE</span><span class="corner">↗</span></div>
+      <aside aria-labelledby="entry-title">
+        <div class="entry-top"><span class="eyebrow">YOUR NEXT MOVE</span><span class="corner" aria-hidden="true">↗</span></div>
         <h3 id="entry-title">Your place is<br>waiting.</h3>
         <div id="entry-content"><p>Wallet connection requires JavaScript.</p></div>
         <div class="next-round"><div><span id="next-label">FIRST ROUND</span><b id="next-status">Registration not open</b></div><p id="next-start">Starts 30 minutes after the official token is activated.</p></div>
-        <div class="entry-rule">10,000,000 $APEX required.<br>Trade on your own wallet. No $APEX locked.</div>
+        <div class="entry-rule"><span aria-hidden="true">↳</span><p>10,000,000 $APEX required.<br>Your wallet. No $APEX locked.</p></div>
       </aside>
     </div>
   </section>
   <section id="how" class="how">
-    <div class="eyebrow">THE RULES ARE SIMPLE. THE EDGE IS YOURS.</div>
-    <div class="how-title"><h2>A level field.<br><em>A higher standard.</em></h2><p>Every trader starts together. Every qualifying place gets the same share. Your performance makes the difference.</p></div>
+    <div class="section-heading"><div><div class="eyebrow">02 / HOW IT WORKS</div><h2>Simple rules.<br>Real ambition.</h2></div><p class="section-intro">Every trader starts together. Every qualifying place gets the same share. Your performance makes the difference.</p></div>
     <div class="steps">
-      <article><span>01 / QUALIFY</span><h3>Hold 10M $APEX.</h3><p>Connect your wallet and check your $APEX balance. Eligibility is a check, not an entry.</p></article>
-      <article><span>02 / COMPETE</span><h3>Make your 24 hours count.</h3><p>The first entry window lasts 30 minutes after token activation. Later, register in the final hour of each round. Everyone starts together.</p></article>
-      <article><span>03 / EARN YOUR PLACE</span><h3>Above +50%. Top 10.</h3><p>Finish strictly above +50% in ETH trading return and reach the top 10. Ten winners each receive 10%.</p></article>
+      <article><div class="step-top"><span>01 / QUALIFY</span><span aria-hidden="true">↗</span></div><div class="step-figure"><strong>10M</strong><span>$APEX</span></div><h3>Hold your entry.</h3><p>Connect your wallet and check your $APEX balance. Checking eligibility and registering are separate steps.</p></article>
+      <article><div class="step-top"><span>02 / COMPETE</span><span aria-hidden="true">↗</span></div><div class="step-figure"><strong>24</strong><span>HOURS</span></div><h3>Make your moves.</h3><p>Register before the round starts. Trade on your own wallet. For later rounds, entry opens in the current round’s final hour.</p></article>
+      <article class="accent-step"><div class="step-top"><span>03 / EARN YOUR PLACE</span><span aria-hidden="true">↗</span></div><div class="step-figure"><strong>+50<span>%</span></strong><span>GO BEYOND</span></div><h3>Rise. Rank. Share.</h3><p>Finish strictly above +50% in ETH trading return and reach the top 10. With ten winners, each receives an equal 10% share.</p></article>
     </div>
-    <div id="faq" class="faq"></div>
+    <div class="faq-layout"><div><div class="eyebrow">A LITTLE MORE CLARITY</div><h3>Good questions.<br>Clear answers.</h3></div><div id="faq" class="faq"></div></div>
   </section>
-  <section id="history">
-    <div class="section-heading"><div><div class="eyebrow">THE PREVIOUS SUMMIT</div><h2>Past rounds.</h2></div></div>
-    <div id="history-list" class="empty history-empty"><h3>A new arena. An unwritten history.</h3><p>Completed rounds, verified results and payout status will appear here.</p></div>
+  <section id="history" class="history">
+    <div class="section-heading"><div><div class="eyebrow">03 / THE TRACK RECORD</div><h2>Every round<br>has a story.</h2></div><span class="section-arrow" aria-hidden="true">↗</span></div>
+    <div id="history-list" class="empty history-empty"><span class="history-index" aria-hidden="true">[ — ]</span><div><h3>History in the making.</h3><p>Completed rounds, verified results and payout status will appear here.</p></div><a class="text-link" href="#arena">Back to the arena <span aria-hidden="true">↗</span></a></div>
   </section>
-  <section class="pending"><h3>Before the first round</h3><p id="pending-rules"></p><p>100% of $APEX fees designated for this program are intended for its round pool. The exact fee source is pending confirmation.</p></section>
+  <section class="pending"><span class="eyebrow">THE DETAILS MATTER</span><div><h3>Competition terms in progress.</h3><p id="pending-rules"></p><p>100% of $APEX fees designated for this program are intended for its round pool. The exact fee source is pending confirmation.</p></div></section>
+  <section class="closing"><div class="eyebrow">ONE STARTING LINE. ENDLESS POSSIBILITY.</div><h2>See you in<br>the arena.</h2><a class="primary" href="#arena">Find your place <span aria-hidden="true">↗</span></a><div class="closing-mark" aria-hidden="true"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000" loading="lazy"></span></div></section>
 </main>
-<footer><a class="brand" href="#"><span class="logo-icon"><img src="assets/icon.png" alt=""></span>Apex</a><p>Earn your place.</p><span>Independent project · Not affiliated with Robinhood</span></footer>
+<footer><a class="brand" href="#" aria-label="ARENA home"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000" loading="lazy"></span><span>ARENA</span></a><p>Your edge. Your arena.</p><span>Independent project.<br>Not affiliated with Robinhood.</span><a href="#" class="back-top" aria-label="Back to top">↑</a></footer>
 <dialog id="wallet-dialog" aria-labelledby="wallet-title">
   <button id="close-dialog" aria-label="Close" class="close">×</button>
-  <span class="eyebrow">APEX / YOUR WALLET</span>
-  <h2 id="wallet-title">Step into the arena.</h2>
+  <span class="eyebrow">ARENA / YOUR WALLET</span>
+  <h2 id="wallet-title">Make your<br>next move.</h2>
   <p>Choose your browser wallet. Connecting shares your public address; it does not enter a round.</p>
   <div id="wallet-list"></div>
   <p id="wallet-error" class="outside" role="alert"></p>
@@ -77,6 +89,6 @@
   <p class="muted">Joining a round asks you to sign a message naming that round. The server checks your balance before confirming entry.</p>
 </dialog>
 <div id="toast" role="status"></div>
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=arena-20260914"></script>
 </body>
 </html>

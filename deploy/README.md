@@ -20,6 +20,10 @@ Only `dist/` becomes public. Tests, local data, metadata, archives and secrets a
 
 Check public HTTPS after deployment, the prelaunch state (unless previously activated), main-timer behavior and private preview. API routes must return no-store. There is no public admin/reset route. Keep previous images/releases and backups; do not prune during routine deployment.
 
+## Frontend-only design updates
+
+For a design-only release, export the exact committed `dist/` tree with `git archive --format=tar --output=arena-design.tar <40-character-commit> dist`, calculate its SHA-256, and transfer the archive plus `deploy/static.py` to the VPS. Run `python3 static.py /path/to/arena-design.tar <40-character-commit> <sha256>` as root. The script accepts only regular files and directories under `dist/`, saves the previous frontend symlink and API launch snapshot in a private `/root/backups/arena-design-<UTCstamp>` directory, and switches `/var/www/apex/current` atomically. It checks the served HTML, JavaScript and CSS bytes and verifies that `activatedAt` and the access-token address have not changed; a failed check restores the previous symlink. Existing releases are retained. This flow does not change the API container, database, Nginx configuration or certificates.
+
 ## Data backup and rollback
 Before updates, the installer uses Python SQLite's online backup API to make a consistent snapshot (including committed WAL data) in a new private `/root/backups/apex-<timestamp>` directory and verifies integrity. It also saves Nginx configurations, active release and previous image ID. It never includes private data in the deployment archive.
 
