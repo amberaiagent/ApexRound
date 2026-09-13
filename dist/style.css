@@ -48,13 +48,10 @@ header .outline { border-color: var(--ink); }
 .chain-dot { display: block; width: 9px; height: 9px; border: 2px solid var(--accent); border-radius: 50%; }
 .launch-badge { border: 1px solid var(--line); border-radius: 20px; padding: 5px 10px; }
 .hero-art { background: var(--accent); position: relative; overflow: hidden; color: var(--bg); min-width: 0; }
+.arena-sculpture { position: absolute; width: 105%; height: 90%; left: -2.5%; top: 2%; object-fit: contain; pointer-events: none; }
 .art-top { display: flex; align-items: center; justify-content: space-between; position: absolute; inset: 25px 28px auto; z-index: 2; color: var(--on-accent); }
 .art-top > span:last-child { font-size: 29px; font-weight: 400; }
-.brand-disc { position: absolute; border-radius: 50%; width: 72%; aspect-ratio: 1; background: var(--bg); left: 14%; top: 13%; display: grid; place-items: center; }
-.brand-disc .logo-mark { width: 67%; height: auto; aspect-ratio: 1; }
-.art-orbit { position: absolute; width: 116%; aspect-ratio: 1; border: 1px solid #f4f4f449; border-radius: 50%; pointer-events: none; }
-.orbit-one { left: -8%; top: -1%; }.orbit-two { left: -8%; top: 24%; }
-.art-bottom { position: absolute; inset: auto 28px 26px; display: flex; justify-content: space-between; align-items: flex-end; gap: 15px; font-size: 15px; line-height: 1.4; color: var(--on-accent); }
+.art-bottom { z-index: 2; position: absolute; inset: auto 28px 26px; display: flex; justify-content: space-between; align-items: flex-end; gap: 15px; font-size: 15px; line-height: 1.4; color: var(--on-accent); }
 .art-arrow { border: 1px solid #f4f4f480; border-radius: 50%; width: 44px; height: 44px; display: grid; place-items: center; font-size: 30px; }
 .principles { display: grid; grid-template-columns: repeat(3, 1fr); padding-block: 29px; border-bottom: 1px solid var(--line); }
 .principles > div { display: flex; align-items: flex-start; gap: 28px; padding-inline: 28px; border-left: 1px solid var(--line); }
@@ -119,14 +116,14 @@ dialog::backdrop { background: #20202065; backdrop-filter: blur(6px); }dialog h2
 @media (min-width: 1600px) { .hero-art { min-height: 630px; }.hero-copy { padding-top: 65px; }.hero h1 { margin-top: 50px; } }
 @media (max-width: 1150px) {
   header, main, footer { width: calc(100% - 64px); }header { height: 96px; }nav { gap: 24px; }
-  .hero { min-height: 510px; grid-template-columns: 1.12fr 1fr; }.hero-copy { padding-top: 38px; }.hero h1 { font-size: 8vw; margin-top: 33px; }.hero-copy > p { font-size: 14px; }.hero-art .brand-disc { top: 17%; }
+  .hero { min-height: 510px; grid-template-columns: 1.12fr 1fr; }.hero-copy { padding-top: 38px; }.hero h1 { font-size: 8vw; margin-top: 33px; }.hero-copy > p { font-size: 14px; }
   .principles > div { gap: 16px; padding-inline: 20px; }.principles p { font-size: 13px; }
   .arena-body { grid-template-columns: minmax(0, 1fr) 305px; }.leaderboard { padding: 24px 20px; }aside { padding: 24px; }aside h3 { font-size: 42px; }.table-heading h3 { font-size: 22px; }.table-heading { flex-wrap: wrap; }.round-bar > div { padding: 24px 16px; }.round-bar strong { font-size: 3.6vw; }.round-bar .label { font-size: 9px; }
   .steps article { padding: 22px; }.step-figure { width: 175px; height: 175px; }.step-figure strong { font-size: 60px; }.steps h3 { font-size: 24px; }.faq-layout { gap: 45px; }.closing-mark { width: 270px; height: 270px; }
 }
 @media (max-width: 800px) {
   header, main, footer { width: calc(100% - 40px); }header { height: 85px; gap: 15px; }.brand { font-size: 25px; }.logo-mark { width: 32px; height: 32px; }nav { gap: 18px; font-size: 12px; }nav a:last-child { display: none; }header .outline { font-size: 12px; padding: 13px 15px; }
-  .hero { min-height: 455px; }.hero h1 { font-size: 8.5vw; }.hero .eyebrow { font-size: 8px; }.hero-copy > p { font-size: 13px; }.hero-bottom { gap: 10px; font-size: 10px; }.art-top { inset: 20px 20px auto; font-size: 9px; }.art-bottom { inset: auto 20px 23px; font-size: 12px; }.art-arrow { width: 36px; height: 36px; font-size: 25px; }.hero-art .brand-disc { top: 19%; }
+  .hero { min-height: 455px; }.hero h1 { font-size: 8.5vw; }.hero .eyebrow { font-size: 8px; }.hero-copy > p { font-size: 13px; }.hero-bottom { gap: 10px; font-size: 10px; }.art-top { inset: 20px 20px auto; font-size: 9px; }.art-bottom { inset: auto 20px 23px; font-size: 12px; }.art-arrow { width: 36px; height: 36px; font-size: 25px; }
   .principles { padding-block: 23px; }.principles .mini-index { display: none; }.principles > div { padding-inline: 15px; }.principles p { font-size: 12px; }.principles > div > span:last-child { font-size: 20px; }
   .arena, .how, .history { padding-top: 65px; }h2 { font-size: 49px; }.round-bar { grid-template-columns: 1fr 1fr; }.round-bar > div { border-bottom: 1px solid var(--line); padding: 25px; }.round-bar > div:nth-child(2) { border-right: 0; }.round-bar > div:nth-child(3) { border-bottom: 0; }.round-bar strong, .round-bar #round-number { font-size: 45px; }.round-bar .label { font-size: 10px; }
   .arena-body { grid-template-columns: minmax(0, 1fr) 280px; }aside { padding: 23px; }.leaderboard { padding-inline: 20px; }.table-heading h3 { font-size: 20px; }.table-heading h3 > span { display: none; }.prelaunch-board { min-height: 350px; }.empty h3 { font-size: 28px; }
@@ -135,7 +132,7 @@ dialog::backdrop { background: #20202065; backdrop-filter: blur(6px); }dialog h2
 }
 @media (max-width: 600px) {
   header { height: 80px; }header nav { display: none; }header .brand { gap: 7px; font-size: 23px; }header #connect { padding: 12px 13px; font-size: 11px; max-width: 170px; }
-  .hero { display: flex; flex-direction: column; }.hero-copy { padding: 34px 0 28px; }.hero .eyebrow { font-size: 9px; }.hero h1 { font-size: clamp(60px, 14.7vw, 86px); letter-spacing: -.07em; margin: 28px 0 21px; }.hero-copy > p { font-size: 14px; }.hero-bottom { margin-top: 0; padding-top: 25px; font-size: 10px; }.hero-art { min-height: 360px; }.hero-art .brand-disc { width: 67%; left: 16.5%; top: 12%; max-width: 270px; }.brand-disc .logo-mark { width: 66%; }.art-orbit { width: 95%; left: 2.5%; }.orbit-one { top: -13%; }.orbit-two { top: 25%; }.art-bottom { font-size: 12px; }.art-top { font-size: 8px; }.art-top > span:last-child { font-size: 24px; }
+  .hero { display: flex; flex-direction: column; }.hero-copy { padding: 34px 0 28px; }.hero .eyebrow { font-size: 9px; }.hero h1 { font-size: clamp(60px, 14.7vw, 86px); letter-spacing: -.07em; margin: 28px 0 21px; }.hero-copy > p { font-size: 14px; }.hero-bottom { margin-top: 0; padding-top: 25px; font-size: 10px; }.hero-art { min-height: 360px; }.art-bottom { font-size: 12px; }.art-top { font-size: 8px; }.art-top > span:last-child { font-size: 24px; }
   .principles { display: block; padding: 0; }.principles > div, .principles > div:first-child, .principles > div:last-child { padding: 17px 0; border-left: 0; border-bottom: 1px solid var(--line); align-items: center; }.principles > div:last-child { border-bottom: 0; }.principles .mini-index { display: initial; font-size: 9px; padding: 0; }.principles p { font-size: 12px; }.principles p br { display: none; }.principles strong { margin-left: 4px; }
   .arena, .how, .history { padding-top: 57px; }.section-heading { display: block; margin-bottom: 26px; }.section-heading h2 { font-size: 45px; margin-top: 18px; }.section-heading .eyebrow { font-size: 10px; }.heading-side { display: flex; align-items: center; justify-content: space-between; text-align: left; gap: 15px; margin-top: 24px; padding: 0; }.heading-side p { font-size: 10px; line-height: 1.5; margin: 0; }.live-pill { font-size: 8px; padding: 7px 9px; }
   .launch-note { display: block; padding: 20px 0; }.launch-note > span { font-size: 10px; }.launch-note p { margin-top: 9px; font-size: 12px; }.round-bar > div { padding: 21px 16px; gap: 14px; min-height: 157px; }.round-bar strong, .round-bar #round-number { font-size: clamp(29px, 8.5vw, 40px); }.round-bar .label { font-size: 8px; letter-spacing: .065em; }.round-bar .muted { font-size: 10px; }
@@ -150,7 +147,7 @@ dialog::backdrop { background: #20202065; backdrop-filter: blur(6px); }dialog h2
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; }*, *::before, *::after { animation: none !important; transition: none !important; } }
 @media (max-width: 600px) {
-  .hero-art .brand-disc { left: 50%; transform: translateX(-50%); }
+
   .round-bar .timer { font-size: clamp(22px, 7.3vw, 40px); }
   .closing-mark { display: none; }
 }
