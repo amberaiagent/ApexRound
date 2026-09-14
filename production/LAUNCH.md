@@ -1,4 +1,19 @@
-# Initial APEX activation
+# Retired initial APEX activation
+
+**Current status: retired at the owner's request.** On **2026-09-14 15:33:20.802 UTC**, the operator retired the old access contract. `/api/arena` now returns `phase: prelaunch`, with `token`, `activatedAt`, `current`, `next` and `registration` all null. The next owner-supplied CA has not been activated.
+
+- Retirement archive ID: `1`; epoch: `1789400000802`.
+- Deployed frontend and API release: `456358db3efd6c96f08b3ceaab16e9dc5603f9ae`.
+- The original launch's exact metadata and activation time are retained in `retired_launches`. There were zero entries and zero challenges to archive.
+- Private snapshots before and after retirement, plus the operator receipt: `/root/backups/arena-retire-20260914T153320Z/`.
+- Additional preflight snapshot: `/root/backups/arena-preflight-20260914T153115Z/before.sqlite`.
+- Deployment rollback files and database snapshot: `/root/backups/apex-20260914T153308Z/`.
+- Both retirement snapshots passed SQLite integrity checks; the final database passed foreign-key checks and has no active launch, entries or challenges.
+- 75 automated tests passed. Public HTTPS confirmed the prelaunch state and no-store API response. The served transparent PNG favicon matched the local asset byte for byte.
+
+For a code rollback, preserve the **current database including retirement archives**. Restoring a pre-retirement database would reactivate the old contract. The details below are a historical record only.
+
+## Historical activation
 
 Owner-approved contract: `0xfb57c3f37c6122817981c8ac94b24a1b844f766a`.
 Verified on Robinhood Chain (4663): Apex / APEX, 18 decimals, 1 billion total supply.
