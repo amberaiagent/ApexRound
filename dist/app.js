@@ -1,5 +1,5 @@
-import { config, pending } from './lib/config.js?v=arena-new-token-20260914';
-import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from './lib/wallet.js?v=arena-pages-20260914';
+import { config, pending } from './lib/config.js?v=arena-access-5m-20260914';
+import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from './lib/wallet.js?v=arena-access-5m-20260914';
 import { scheduleAt, countdown } from './lib/schedule.js';
 
 const $ = selector => document.querySelector(selector);
@@ -134,7 +134,7 @@ function renderArena() {
     'timer': first && remaining !== '—' ? remaining.slice(3) : remaining,
     'timer-note': !ready && arena ? 'Synchronizing with the arena' : first ? 'Round #1 starts when this reaches zero' : schedule.current ? '24-hour trading round' : '30-minute first entry window',
     'launch-label': first ? 'REGISTRATION IS OPEN' : schedule.current ? 'THE ROUND IS LIVE' : 'THE FIRST ROUND',
-    'launch-note': syncError || (first ? 'Hold 10M $ARENA, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $ARENA token is activated, the main timer starts at 30:00 and registration opens. At zero, the first 24-hour round begins.'),
+    'launch-note': syncError || (first ? 'Hold 5M $ARENA, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $ARENA token is activated, the main timer starts at 30:00 and registration opens. At zero, the first 24-hour round begins.'),
     'traders-label': first ? 'REGISTERED FOR ROUND #1' : 'TRADERS IN THE ARENA',
     'traders': ready ? String(count ?? 0) : '—',
     'traders-note': first ? 'Confirmed registrations' : schedule.current ? 'Return data pending' : 'Registration has not opened',
@@ -186,7 +186,7 @@ function renderEntry() {
   if (!panel) return;
   panel.replaceChildren();
   if (!wallet.address) {
-    panel.append(text('p', !ready ? 'Connect your wallet to check access and entry status.' : settings.tokenAddress ? 'Connect your wallet, check your 10M $ARENA balance and register during the entry period.' : 'Connect your wallet to get ready. The official $ARENA token has not been activated yet.'));
+    panel.append(text('p', !ready ? 'Connect your wallet to check access and entry status.' : settings.tokenAddress ? 'Connect your wallet, check your 5M $ARENA balance and register during the entry period.' : 'Connect your wallet to get ready. The official $ARENA token has not been activated yet.'));
     panel.append(button('Connect wallet ↗', openWallets));
   } else {
     panel.append(text('p', 'Connected: ' + short(wallet.address), 'wallet-address'));
@@ -215,7 +215,7 @@ function renderEntry() {
             panel.append(text('p', 'Your balance: ' + formatTokens(snapshot.balance, settings.decimals) + ' $ARENA'));
             if (!snapshot.eligible) panel.append(text('p', 'Missing: ' + formatTokens(snapshot.missing, settings.decimals) + ' $ARENA'));
           } else {
-            panel.append(text('p', 'Required: 10,000,000 $ARENA. Checking your balance and registering are separate actions.'));
+            panel.append(text('p', 'Required: 5,000,000 $ARENA. Checking your balance and registering are separate actions.'));
           }
           panel.append(button(busy === 'balance' ? 'Checking balance…' : snapshot ? 'Refresh balance' : 'Check balance', checkBalance));
           const isOpen = fresh() && schedule.registration?.open;
@@ -320,7 +320,7 @@ async function joinRound() {
 }
 const faq = {
   'When does the first round start?': 'Activating the official $ARENA token starts the main arena timer at 30:00 and opens registration. At zero, registration closes and the same timer switches to the first 24-hour trading round.',
-  'When can I join?': 'The first registration period lasts 30 minutes after token activation. For subsequent rounds, registration opens in the final hour of the current round. Check your 10M $ARENA balance, then register separately.',
+  'When can I join?': 'The first registration period lasts 30 minutes after token activation. For subsequent rounds, registration opens in the final hour of the current round. Check your 5M $ARENA balance, then register separately.',
   'Can I join a round after it starts?': 'No. Everyone starts together. The server rejects entries once the round starts.',
   'Does refreshing the page reset the timer?': 'No. Everyone shares one server schedule. Refreshing a page or restarting the site does not restart registration.',
   'Does +50% qualify?': 'No. Trading return measured in ETH must be strictly above +50%. Exactly +50% does not qualify.',

@@ -272,7 +272,7 @@ test('An old balance response cannot restore eligibility after retirement and a 
   app.response({ serverNow: newStart, activatedAt: newStart, token: replacement, ...scheduleAt(newStart, newStart),
     participants: 0, nextParticipants: 0, myCurrentEntry: null, myNextEntry: null, pool: null });
   app.window.dispatchEvent(new Event('focus')); await settle();
-  releaseBalance('0x' + (10000000n * 10n ** 18n).toString(16).padStart(64, '0'));
+  releaseBalance('0x' + (5000000n * 10n ** 18n).toString(16).padStart(64, '0'));
   await settle();
   assert.equal(app.latest().state.token.address, replacement.address);
   assert.ok(panel.children.some(node => node.tagName === 'a' && node.href?.includes(replacement.address)));

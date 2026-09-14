@@ -79,6 +79,19 @@ test('Wrong chain, absent code, invalid ERC-20 values, insufficient supply and r
   }
 });
 
+test('Token inspection accepts exactly 5M supply and rejects one atomic unit below at each decimal precision', async () => {
+  for (const decimals of [0, 6, 18]) {
+    const { rpc: original } = fixture({ decimals, name: 'Arena', symbol: 'ARENA' });
+    let supply = 5000000n * 10n ** BigInt(decimals);
+    const rpc = (method, params) => method === 'eth_call' && params[0].data === '0x18160ddd'
+      ? '0x' + word(supply) : original(method, params);
+    const result = await inspectToken({ address: example, rpc });
+    assert.equal(result.totalSupply, supply.toString());
+    supply--;
+    await assert.rejects(inspectToken({ address: example, rpc }), /5,000,000-token access threshold/);
+  }
+});
+
 test('ABI metadata decoder rejects invalid offsets, lengths and terminal control characters', () => {
   assert.equal(decodeText(abiText('APEX'), 'symbol'), 'APEX');
   assert.equal(decodeText('0x' + Buffer.from('APEX').toString('hex').padEnd(64, '0'), 'symbol'), 'APEX');

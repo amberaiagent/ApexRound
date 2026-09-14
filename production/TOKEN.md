@@ -37,7 +37,9 @@ Rollback after retirement must retain the retired database and its archives. A f
 `APEX_RPC_URL` optionally supplies a dedicated HTTPS RPC endpoint to the service/operator. Keep it in private server configuration; never commit it, print it or add it to public browser files. No wallet private key, token approval or transfer is required.
 
 ## Entry acceptance
-The visitor connects their wallet, checks their balance, then separately clicks Join round. They sign a readable EIP-191 message naming the domain, wallet, chain, exact token, round and dates, with a short-lived nonce. The server verifies it and independently reads the latest balance on the approved chain. The threshold is exactly 10,000,000 tokens using verified decimals. Late/duplicate/replayed requests fail even if the browser still shows an enabled button.
+The visitor connects their wallet, checks their balance, then separately clicks Join round. They sign a readable EIP-191 message naming the domain, wallet, chain, exact token, round and dates, with a short-lived nonce. The server verifies it and independently reads the latest balance on the approved chain. The threshold is exactly 5,000,000 tokens using verified decimals. Late/duplicate/replayed requests fail even if the browser still shows an enabled button.
+
+New challenges use message version 3 and state the 5,000,000-token requirement. Historical versions 1 and 2 preserve their original 10,000,000-token text and signed bytes; any unexpired older challenge is still checked against its own signed threshold. `dist/lib/access-policy.js` defines the immutable versioned requirements shared by the browser, server and token inspection.
 
 ## Current boundaries
 The replacement-token activation requires the owner's later explicit final CA. Check `/api/arena` for its actual timestamp; never infer activation from this document or browser files. Trade ingestion, portfolio valuation, rankings and payouts are separate unfinished work. Activation starts the agreed schedule and registration; it does not create a result pipeline.

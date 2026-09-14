@@ -129,7 +129,7 @@ function renderDetail() {
     metric('Trading window', '24 hours', 'Starts ' + date(round.start) + '. Ends ' + date(round.end) + '.'),
     metric('Confirmed registrations', round.participants === null ? 'Unavailable' : round.participants.toLocaleString('en-US'), round.participants === null ? (round.status === 'ended' ? 'Historical registration counts are not available from the current arena feed.' : 'This round’s registration count is not available from the latest arena update.') : 'Confirmed by the latest arena update.'),
     metric('Registration', round.id === 1 ? '30 minutes' : '1 hour', 'Opens ' + date(round.registration.opensAt) + '. Closes ' + date(round.registration.closesAt) + '.'),
-    metric('Access requirement', '10M $ARENA', 'Connect your wallet, verify your balance and register before the round starts.'),
+    metric('Access requirement', '5M $ARENA', 'Connect your wallet, verify your balance and register before the round starts.'),
   );
   const notice = node('section', undefined, 'notice');
   notice.append(node('h3', 'Results and payouts are pending.'), node('p', 'Verified portfolio returns, rankings, winners and payout records are not available yet. A round ending does not mean its results or rewards have been finalized.'));

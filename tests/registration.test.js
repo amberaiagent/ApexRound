@@ -17,9 +17,18 @@ const start = Date.UTC(2026, 8, 11, 12);
 const origin = 'https://apex-round.com';
 const token = { address: '0x3333333333333333333333333333333333333333', chainId: 4663, decimals: 18 };
 const word = n => '0x' + BigInt(n).toString(16).padStart(64, '0');
-const required = 10000000n * 10n ** 18n;
+const required = 5000000n * 10n ** 18n;
 const hash = '0x' + 'a'.repeat(64);
 const balance = { balance: required.toString(), block: '0x123', blockHash: hash };
+function balanceRpc(value) {
+  return async (method, params) => {
+    if (method === 'eth_chainId') return '0x1237';
+    if (method === 'eth_getBlockByNumber') return { number: '0x123', hash, timestamp: '0x' + BigInt(start / 1000).toString(16) };
+    if (method === 'eth_getCode') return '0x6080';
+    if (method === 'eth_call') return params[0].data === '0x313ce567' ? word(18) : word(value());
+    throw Error('Unexpected RPC: ' + method);
+  };
+}
 const status = expected => error => error.status === expected;
 function fixture(t, options = {}) {
   const store = new ArenaStore(':memory:'); t.after(() => store.close());
@@ -131,11 +140,11 @@ test('New ARENA challenge version is persisted and only its exact text can be re
   const { store, service } = fixture(t); store.activate(token, start);
   const wallet = Wallet.createRandom();
   const challenge = service.challenge({ address: wallet.address, roundId: 1 }, origin);
-  assert.equal(challenge.messageVersion, 2);
+  assert.equal(challenge.messageVersion, 3);
   assert.equal(challenge.messageVersion, ENTRY_MESSAGE_VERSION);
-  assert.equal(store.challenge(challenge.nonce).messageVersion, 2);
+  assert.equal(store.challenge(challenge.nonce).messageVersion, 3);
   assert.match(challenge.message, /^ARENA round registration\n/);
-  assert.match(challenge.message, /\nRequired balance: 10000000 ARENA tokens\n/);
+  assert.match(challenge.message, /\nRequired balance: 5000000 ARENA tokens\n/);
   assert.doesNotMatch(challenge.message, /APEX/);
   const legacyText = entryMessage({ ...challenge, messageVersion: 1 });
   await assert.rejects(service.register({
@@ -219,16 +228,74 @@ test('Browser validates both legacy and ARENA messages but never signs a version
   const settings = { ...config, tokenAddress: token.address, decimals: token.decimals, targetRoundId: 1 };
   const legacy = { ...challenge }; delete legacy.messageVersion;
   legacy.message = entryMessage(legacy);
+  const priorArena = { ...challenge, messageVersion: 2 };
+  priorArena.message = entryMessage(priorArena);
   await browser.signEntry(legacy, settings, origin);
+  await browser.signEntry(priorArena, settings, origin);
   const signature = await browser.signEntry(challenge, settings, origin);
-  assert.deepEqual(signedMessages, [legacy.message, challenge.message]);
+  assert.deepEqual(signedMessages, [legacy.message, priorArena.message, challenge.message]);
   for (const altered of [
-    { ...challenge, messageVersion: 1 }, { ...legacy, messageVersion: 2 },
-    ...[null, 0, 3, '2', true].map(messageVersion => ({ ...challenge, messageVersion })),
+    { ...challenge, messageVersion: 1 }, { ...challenge, messageVersion: 2 },
+    { ...legacy, messageVersion: 2 }, { ...priorArena, messageVersion: 3 },
+    ...[null, 0, 4, '3', true].map(messageVersion => ({ ...challenge, messageVersion })),
   ]) await assert.rejects(browser.signEntry(altered, settings, origin), /details changed|Unsupported registration message version/);
-  assert.equal(signedMessages.length, 2);
+  assert.equal(signedMessages.length, 3);
   await service.register({ nonce: challenge.nonce, signature }, origin);
   assert.equal(store.count(1), 1);
+});
+
+test('The 5M upgrade preserves persisted v2 signed bytes and enforces their original 10M requirement', async t => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'arena-threshold-compatibility-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const filename = path.join(dir, 'arena.sqlite');
+  const wallet = Wallet.createRandom(), address = wallet.address.toLowerCase();
+  const previous = {
+    messageVersion: 2, nonce: 'e'.repeat(48), address, roundId: 1,
+    origin, chainId: token.chainId, tokenAddress: token.address,
+    startsAt: start + FIRST_ENTRY_MS, endsAt: start + FIRST_ENTRY_MS + ROUND_MS,
+    issuedAt: start, expiresAt: start + 300000,
+  };
+  const message = [
+    'ARENA round registration', 'Website: ' + origin, 'Wallet: ' + address,
+    'Network: Robinhood Chain (4663)', 'Round: #1',
+    'Trading starts: 2026-09-11T12:30:00.000Z', 'Trading ends: 2026-09-12T12:30:00.000Z',
+    'Access token: ' + token.address, 'Required balance: 10000000 ARENA tokens',
+    'Register this wallet for this round only. This does not authorize a payment, token approval or transfer.',
+    'Nonce: ' + previous.nonce, 'Issued at: 2026-09-11T12:00:00.000Z',
+    'Expires at: 2026-09-11T12:05:00.000Z',
+  ].join('\n');
+  const signature = await wallet.signMessage(message);
+  const rawPayload = JSON.stringify(previous, null, 2) + '\n';
+  let store = new ArenaStore(filename);
+  try {
+    store.activate(token, start);
+    store.saveChallenge(previous);
+    store.db.prepare('UPDATE challenges SET payload=? WHERE nonce=?').run(rawPayload, previous.nonce);
+    const priorWallet = Wallet.createRandom(), priorAddress = priorWallet.address.toLowerCase();
+    const priorMessage = message.replace('Wallet: ' + address, 'Wallet: ' + priorAddress);
+    const priorSignature = await priorWallet.signMessage(priorMessage);
+    store.db.prepare('INSERT INTO entries VALUES(?,?,?,?,?,?,?,?)').run(1, priorAddress,
+      start, (10000000n * 10n ** 18n).toString(), balance.block, balance.blockHash, priorMessage, priorSignature);
+    const prior = store.db.prepare('SELECT * FROM entries WHERE address=?').get(priorAddress);
+    store.close(); store = new ArenaStore(filename);
+    assert.equal(entryMessage(store.challenge(previous.nonce)), message);
+    let availableBalance = required;
+    const service = new ArenaService(store, { now: () => start + 1000, rpc: balanceRpc(() => availableBalance) });
+    const request = { nonce: previous.nonce, signature, messageVersion: 3 };
+    await assert.rejects(service.register(request, origin), error => error.status === 403 && /10,000,000/.test(error.message));
+    availableBalance = 10000000n * 10n ** 18n - 1n;
+    await assert.rejects(service.register(request, origin), status(403));
+    assert.equal(store.challenge(previous.nonce).used, false);
+    assert.equal(store.db.prepare('SELECT payload FROM challenges WHERE nonce=?').get(previous.nonce).payload, rawPayload);
+    availableBalance++;
+    await service.register(request, origin);
+    const accepted = store.db.prepare('SELECT message,signature FROM entries WHERE address=?').get(address);
+    assert.equal(accepted.message, message);
+    assert.equal(accepted.signature, signature);
+    assert.equal(store.db.prepare('SELECT payload FROM challenges WHERE nonce=?').get(previous.nonce).payload, rawPayload);
+    assert.deepEqual(store.db.prepare('SELECT * FROM entries WHERE address=?').get(priorAddress), prior);
+    assert.deepEqual(store.launch(), { token, activatedAt: start });
+  } finally { store.close(); }
 });
 
 test('Trusted balance verification enforces exact threshold and rejects bad chain, stale blocks and reorgs', async () => {
@@ -245,7 +312,7 @@ test('Trusted balance verification enforces exact threshold and rejects bad chai
     if (fault) await assert.rejects(readEligibility(token, token.address, rpc, () => start), error => {
       assert.equal(error.status, fault === 'short' ? 403 : 503);
       if (fault === 'short') {
-        assert.match(error.message, /10,000,000 \$ARENA/);
+        assert.match(error.message, /5,000,000 \$ARENA/);
         assert.doesNotMatch(error.message, /APEX/);
       }
       return true;
@@ -280,5 +347,37 @@ test('HTTP accepts the real signature flow, rejects other origins/large bodies a
   const accepted = await post('entry/register', { nonce: challenge.nonce, signature: await wallet.signMessage(challenge.message) });
   assert.equal(accepted.status, 201);
   assert.equal((await accepted.json()).roundId, 1);
+  assert.equal((await (await fetch(url + '/api/arena?wallet=' + wallet.address)).json()).myNextEntry.roundId, 1);
+});
+
+test('Signed HTTP entry rejects 5M minus one atomic unit and accepts exactly 5M without consuming a failed nonce', async t => {
+  let availableBalance = required;
+  const { store, service } = fixture(t, { eligibility: undefined, rpc: balanceRpc(() => availableBalance) });
+  store.activate(token, start);
+  const server = http.createServer(createApiHandler(service, { origins: [origin] }));
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const url = 'http://127.0.0.1:' + server.address().port;
+  const post = (route, body) => fetch(url + '/api/entry/' + route, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify(body),
+  });
+  const wallet = Wallet.createRandom();
+  const response = await post('challenge', { address: wallet.address, roundId: 1 });
+  assert.equal(response.status, 200);
+  const challenge = await response.json();
+  assert.equal(challenge.messageVersion, 3);
+  assert.ok(challenge.message.includes('\nRequired balance: 5000000 ARENA tokens\n'));
+  const request = { nonce: challenge.nonce, signature: await wallet.signMessage(challenge.message) };
+  availableBalance = required - 1n;
+  const short = await post('register', request);
+  assert.equal(short.status, 403);
+  assert.match((await short.json()).error, /5,000,000 \$ARENA/);
+  assert.equal(store.count(1), 0);
+  assert.equal(store.challenge(challenge.nonce).used, false);
+  availableBalance = required;
+  const accepted = await post('register', request);
+  assert.equal(accepted.status, 201);
+  assert.equal((await accepted.json()).roundId, 1);
+  assert.equal(store.db.prepare('SELECT balance FROM entries WHERE address=?').get(wallet.address.toLowerCase()).balance, required.toString());
   assert.equal((await (await fetch(url + '/api/arena?wallet=' + wallet.address)).json()).myNextEntry.roundId, 1);
 });
