@@ -5,6 +5,8 @@ The owner confirmed DNS setup and Cloudflare Full (strict) on 2026-09-14.
 
 Status: prepared; DNS delegation and certificate issuance must complete before the final release is deployed.
 
+The 5M access update was deployed separately to the still-active `apex-round.com` on 2026-09-14, release `3049065271a95e6795bd7ed303b158b4b08dcd5a` from `codex/five-million`. Main contains the same access changes plus this pending migration. Rebuild a fresh migration archive from current main when DNS is ready; do not deploy the earlier `cb2ac74` archive, which still has the superseded 10M requirement. Transfer the main branch installer as well; the last installer used on the VPS is the current-domain version.
+
 ## DNS and certificates
 
 - Registrar-published nameservers: `piers.ns.cloudflare.com`, `tina.ns.cloudflare.com`.
