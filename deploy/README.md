@@ -1,6 +1,6 @@
 # APEX VPS deployment
 
-Public address: https://apex-round.com. Cloudflare proxies the root and www; HTTP and www redirect to canonical HTTPS. Keep Cloudflare **Full (strict)** and the existing Cloudflare-only firewall rules.
+Canonical address: https://arenarounds.xyz. Cloudflare proxies the root and www; HTTP, www and the former apex-round.com domain redirect to canonical HTTPS with the path and query preserved. Keep Cloudflare **Full (strict)** and the existing Cloudflare-only firewall rules.
 
 ## Server layout
 - Static releases: `/var/www/apex/releases/<source-commit>`; active symlink `/var/www/apex/current`.
@@ -10,11 +10,13 @@ Public address: https://apex-round.com. Cloudflare proxies the root and www; HTT
 - Public Nginx: `/etc/nginx/sites-available/apex-round`.
 - SSH preview Nginx: `/etc/nginx/conf.d/apex-preview.conf`, loopback port 8081.
 - Both Nginx hosts proxy `/api/` to loopback 8082 with no caching. Only canonical HTTPS and the private SSH preview origin may submit entries.
-- ACME webroot `/var/lib/letsencrypt`; certificate `/etc/letsencrypt/live/apex-round.com/`. Keep the private key on the server.
+- ACME webroot `/var/lib/letsencrypt`; primary certificate `/etc/letsencrypt/live/arenarounds.xyz/` covers the new root and www. Retain `/etc/letsencrypt/live/apex-round.com/` for HTTPS redirects and its renewal. Keep private keys on the server.
 - Existing `certbot.timer` and deploy hook validate/reload Nginx on renewal.
 
 ## Deploy
-GitHub push alone does not deploy. Run tests, commit, export the exact commit's `dist api scripts/lib deploy package.json package-lock.json .dockerignore` into a tar archive. Transfer to the existing VPS and verify its SHA-256. `deploy/install.py` installs this archive given the commit and digest, builds the API image, retains the previous release/config/container for rollback, switches the static symlink and checks the preview/API.
+GitHub push alone does not deploy. Both domain certificates must already exist before deployment; the installer checks this before preparing a release. Run tests, commit, export the exact commit's `dist api scripts/lib deploy package.json package-lock.json .dockerignore` into a tar archive. Transfer to the existing VPS and verify its SHA-256. `deploy/install.py` installs this archive given the commit and digest, builds the API image, retains the previous release/config/container for rollback, switches the static symlink and checks the preview/API.
+
+The API accepts registration requests only from `https://arenarounds.xyz` and the private preview `http://127.0.0.1:4174`. Old-domain, www and HTTP origins cannot submit entries. Registration messages are bound to the visitor's actual origin; archived signatures keep their original bytes and domain. Domain changes require a full deployment, not the frontend-only installer. They never activate a token or change the stored schedule.
 
 Only `dist/` becomes public. Tests, local data, metadata, archives and secrets are excluded. An API deployment never invokes token activation. See `production/TOKEN.md` for that separate owner-triggered action.
 

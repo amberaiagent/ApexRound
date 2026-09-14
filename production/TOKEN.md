@@ -11,7 +11,7 @@ The approved network is Robinhood Chain mainnet (4663). Access is tied to the ex
 3. On the VPS, activate using the existing container:
    `docker exec apex-api node api/activate.js <FINAL_CA>`
 4. This repeats the onchain checks, writes the verified token and one activation timestamp to the persistent server database, and **immediately starts the main 30:00 timer and opens registration**. The timestamp is set after successful verification, not when inspection begins.
-5. Verify `https://apex-round.com/api/arena` and the page: official CA, registration open, upcoming round #1, one main timer. Open pages refresh within 15 seconds. No rebuild or second countdown is needed.
+5. Verify `https://arenarounds.xyz/api/arena` and the page: official CA, registration open, upcoming round #1, one main timer. Open pages refresh within 15 seconds. No rebuild or second countdown is needed.
 6. At activation + 30 minutes, the first 24-hour round starts and entry closes. The main timer switches to the round countdown automatically. Every later round lasts exactly 24 hours; its entry period is the previous round's final hour.
 
 Repeating activation with the same active CA returns the original timestamp. A different CA is refused while a launch is active. After explicit retirement, a new verified CA starts a separate launch with its own 30-minute registration and empty active entry tables. Any CA archived as retired on this chain is permanently rejected by the activation flow. Restarting or deploying the API retains the database and timer. There is no public activation/reset endpoint. Never delete or overwrite the live database to change the schedule.

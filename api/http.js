@@ -1,6 +1,6 @@
 import { ApiError, addressOf } from './service.js';
 
-export function createApiHandler(service, { origins = ['https://apex-round.com'], trustProxy = false } = {}) {
+export function createApiHandler(service, { origins = ['https://arenarounds.xyz'], trustProxy = false } = {}) {
   const buckets = new Map();
   let inFlight = 0;
   function limit(key, maximum) {

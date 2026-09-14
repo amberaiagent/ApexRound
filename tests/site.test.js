@@ -57,7 +57,7 @@ test('Eight page outputs are deterministic and match the generated files committ
     assert.ok(title && !titles.has(title), 'Missing or duplicate page title at ' + route);
     titles.add(title);
     const canonical = elements(html, 'link').find(element => element.attrs.rel === 'canonical');
-    assert.equal(canonical?.attrs.href, 'https://apex-round.com' + route);
+    assert.equal(canonical?.attrs.href, 'https://arenarounds.xyz' + route);
     assert.ok(elements(html, 'meta').some(element => element.attrs.name === 'description' && element.attrs.content.length > 30));
   }
 });
@@ -69,8 +69,8 @@ test('Internal navigation, fragments, assets and browser module imports resolve 
       for (const attribute of ['href', 'src']) {
         const reference = element.attrs[attribute];
         if (!reference || /^(?:data:|mailto:|tel:)/i.test(reference)) continue;
-        const url = new URL(reference, 'https://apex-round.com' + route);
-        if (url.origin !== 'https://apex-round.com') continue;
+        const url = new URL(reference, 'https://arenarounds.xyz' + route);
+        if (url.origin !== 'https://arenarounds.xyz') continue;
         if (element.tag === 'link' && element.attrs.rel === 'canonical') continue;
         if (url.pathname.endsWith('/') || url.pathname.endsWith('/index.html')) {
           const destination = url.pathname.replace(/index\.html$/, '');

@@ -52,7 +52,7 @@ function fixture({ nodes = [], state = liveState(), provider, preference } = {})
   let elapsed = 100, response = state;
   const context = vm.createContext({
     config, pending, BrowserWallet, WalletDiscovery, walletError, formatTokens, scheduleAt, countdown,
-    document, window, location: { origin: 'https://apex-round.com' },
+    document, window, location: { origin: 'https://arenarounds.xyz' },
     Event, CustomEvent, structuredClone, AbortSignal, performance: { now: () => elapsed },
     localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
     setTimeout: () => 1, clearTimeout: () => {}, setInterval: (callback, ms) => { intervals.push({ callback, ms }); },

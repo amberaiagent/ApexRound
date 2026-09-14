@@ -46,6 +46,9 @@ def main():
     assert os.geteuid() == 0 and re.fullmatch('[0-9a-f]{40}', commit)
     assert re.fullmatch('[0-9a-f]{64}', digest)
     assert hashlib.sha256(Path(archive).read_bytes()).hexdigest() == digest
+    for hostname in ('arenarounds.xyz', 'apex-round.com'):
+        for name in ('fullchain.pem', 'privkey.pem'):
+            assert (Path('/etc/letsencrypt/live') / hostname / name).is_file(), 'Required HTTPS certificate is missing for ' + hostname
     source = Path('/opt/apex/releases') / commit
     release = Path('/var/www/apex/releases') / commit
     assert not source.exists() and not release.exists(), 'Release already exists; inspect before retrying'
@@ -98,7 +101,7 @@ def main():
             '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true',
             '--memory', '256m', '--pids-limit', '128', '--tmpfs', '/tmp:rw,noexec,nosuid,size=16m',
             '-p', '127.0.0.1:8082:8082', '-v', str(data) + ':/data',
-            '-e', 'APEX_ORIGINS=https://apex-round.com,http://127.0.0.1:4174', image)
+            '-e', 'APEX_ORIGINS=https://arenarounds.xyz,http://127.0.0.1:4174', image)
         new_started = True
         health()
         shutil.copyfile(source / 'deploy/nginx/apex-round.conf', configs[0])

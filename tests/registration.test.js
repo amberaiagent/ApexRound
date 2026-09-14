@@ -14,7 +14,7 @@ import { BrowserWallet } from '../dist/lib/wallet.js';
 import { config } from '../dist/lib/config.js';
 
 const start = Date.UTC(2026, 8, 11, 12);
-const origin = 'https://apex-round.com';
+const origin = 'https://arenarounds.xyz';
 const token = { address: '0x3333333333333333333333333333333333333333', chainId: 4663, decimals: 18 };
 const word = n => '0x' + BigInt(n).toString(16).padStart(64, '0');
 const required = 10000000n * 10n ** 18n;
@@ -152,6 +152,7 @@ test('New ARENA challenge version is persisted and only its exact text can be re
 });
 
 test('Unversioned legacy signatures remain valid after restart without rewriting prior entries or launch data', async t => {
+  const origin = 'https://apex-round.com';
   const dir = mkdtempSync(path.join(tmpdir(), 'apex-message-compatibility-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const filename = path.join(dir, 'arena.sqlite');
@@ -257,9 +258,9 @@ test('Trusted balance verification enforces exact threshold and rejects bad chai
   }
 });
 
-test('HTTP accepts the real signature flow, rejects other origins/large bodies and exposes no activation route', async t => {
+test('Default HTTP origin accepts new-domain signatures, rejects old-domain replay and exposes no activation route', async t => {
   const { store, service } = fixture(t);
-  const server = http.createServer(createApiHandler(service, { origins: [origin] }));
+  const server = http.createServer(createApiHandler(service));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const url = 'http://127.0.0.1:' + server.address().port;
@@ -269,14 +270,29 @@ test('HTTP accepts the real signature flow, rejects other origins/large bodies a
   assert.equal((await state.json()).phase, 'prelaunch');
   assert.equal((await post('activate', { address: token.address })).status, 404);
   assert.equal((await post('entry/challenge', { address: token.address, roundId: 1 })).status, 409);
-  assert.equal((await post('entry/challenge', {}, 'https://evil.example')).status, 403);
+  for (const otherOrigin of ['https://apex-round.com', 'https://www.arenarounds.xyz', 'http://arenarounds.xyz', 'https://evil.example']) {
+    assert.equal((await post('entry/challenge', {}, otherOrigin)).status, 403);
+  }
   assert.equal((await post('entry/challenge', { data: 'x'.repeat(9000) })).status, 413);
   assert.equal((await fetch(url + '/api/arena?wallet=no')).status, 400);
   store.activate(token, start);
   const wallet = Wallet.createRandom();
+  // A still-unexpired challenge issued before a domain move cannot be replayed
+  // on the new origin, nor may its signed bytes be silently rewritten.
+  const previous = service.challenge({ address: wallet.address, roundId: 1 }, 'https://apex-round.com');
+  const previousRequest = { nonce: previous.nonce, signature: await wallet.signMessage(previous.message) };
+  assert.equal((await post('entry/register', previousRequest)).status, 409);
+  assert.equal((await post('entry/register', previousRequest, previous.origin)).status, 403);
+  assert.equal(store.challenge(previous.nonce).origin, previous.origin);
+  assert.equal(store.challenge(previous.nonce).used, false);
+  assert.equal(store.count(1), 0);
   const response = await post('entry/challenge', { address: wallet.address, roundId: 1 });
   assert.equal(response.status, 200);
   const challenge = await response.json();
+  assert.equal(challenge.origin, origin);
+  assert.ok(challenge.message.includes('\nWebsite: ' + origin + '\n'));
+  const changedOriginSignature = await wallet.signMessage(entryMessage({ ...challenge, origin: previous.origin }));
+  assert.equal((await post('entry/register', { nonce: challenge.nonce, signature: changedOriginSignature })).status, 401);
   const accepted = await post('entry/register', { nonce: challenge.nonce, signature: await wallet.signMessage(challenge.message) });
   assert.equal(accepted.status, 201);
   assert.equal((await accepted.json()).roundId, 1);

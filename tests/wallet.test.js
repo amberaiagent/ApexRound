@@ -238,7 +238,7 @@ test('Public release has no simulation or fabricated round, pool, or registratio
 
 test('Registration signs only the displayed, domain/token/round-bound message; altered requests never reach the wallet', async () => {
   const base = {
-    address, origin: 'https://apex-round.com', chainId: 4663, tokenAddress: token,
+    address, origin: 'https://arenarounds.xyz', chainId: 4663, tokenAddress: token,
     roundId: 1, nonce: 'a'.repeat(48), issuedAt: 1800000000000,
     expiresAt: 1800000300000, startsAt: 1800001800000, endsAt: 1800088200000,
   };
@@ -250,7 +250,7 @@ test('Registration signs only the displayed, domain/token/round-bound message; a
     return original(args);
   };
   await wallet.connect(provider);
-  for (const change of [{origin:'https://other.example'}, {address:other}, {tokenAddress:other}, {roundId:2}, {message:base.message + ' changed'}, {endsAt:base.endsAt + 1000}, {nonce:'bad'}]) {
+  for (const change of [{origin:'https://apex-round.com'}, {origin:'https://other.example'}, {address:other}, {tokenAddress:other}, {roundId:2}, {message:base.message + ' changed'}, {endsAt:base.endsAt + 1000}, {nonce:'bad'}]) {
     const entry = {...base,...change};
     await assert.rejects(wallet.signEntry(entry, {...settings,targetRoundId:1}, base.origin), /details changed/);
   }

@@ -24,7 +24,7 @@ Navigation uses real documents and works with direct links and refresh. Old `#ar
 
 ## Delivery
 Source: https://github.com/amberaiagent/ApexRound, branch `main`.
-Website: https://apex-round.com, on the owner's VPS with HTTPS.
+Canonical website: https://arenarounds.xyz, on the owner's VPS with HTTPS. The former apex-round.com address redirects to the corresponding page on the new domain after migration.
 `OPEN-VPS-PREVIEW.cmd` opens the same VPS release through SSH at http://127.0.0.1:4174.
 
 Delivery is manual: pushing to GitHub does not deploy. See `deploy/README.md`. Only `dist/` is served as files; the registration API runs separately. Development stays local. Do not publish or update the previous Sites-hosted copy.
