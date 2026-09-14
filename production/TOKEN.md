@@ -1,6 +1,6 @@
 # Final-token activation
 
-The owner requested retirement of the previous token and will supply a new final CA separately. Do not reuse a historical CA or activate an example as a placeholder. The actual active state comes only from `/api/arena`; this document does not activate or retire anything.
+The owner supplied final CA `0xe75333533f47d5109f2343d306061efdd14b9ddf`, activated at `2026-09-14T21:10:57.927Z`. See `LAUNCH.md` for the receipt and schedule. The previous token remains retired. Do not reuse a historical CA or activate an example as a placeholder. The actual active state comes only from `/api/arena`; this document does not activate or retire anything.
 
 The approved network is Robinhood Chain mainnet (4663). Access is tied to the exact contract address, not its name or ticker. See https://docs.ponsfamily.com/#reading-token-state. ERC-20 compatibility alone does not prove launchpad provenance; verify the intended launch identity against the owner's final address.
 
@@ -42,4 +42,4 @@ The visitor connects their wallet, checks their balance, then separately clicks 
 New challenges use message version 3 and state the 5,000,000-token requirement. Historical versions 1 and 2 preserve their original 10,000,000-token text and signed bytes; any unexpired older challenge is still checked against its own signed threshold. `dist/lib/access-policy.js` defines the immutable versioned requirements shared by the browser, server and token inspection.
 
 ## Current boundaries
-The replacement-token activation requires the owner's later explicit final CA. Check `/api/arena` for its actual timestamp; never infer activation from this document or browser files. Trade ingestion, portfolio valuation, rankings and payouts are separate unfinished work. Activation starts the agreed schedule and registration; it does not create a result pipeline.
+The replacement token was explicitly supplied and activated; a different CA is refused while it is active. Check `/api/arena` for its actual timestamp; never infer activation from browser files. Trade ingestion, portfolio valuation, rankings and payouts are separate unfinished work. Activation starts the agreed schedule and registration; it does not create a result pipeline.
