@@ -1,4 +1,4 @@
-export const FIRST_ENTRY_MS = 30 * 60 * 1000;
+export const FIRST_ENTRY_MS = 2 * 60 * 60 * 1000;
 export const ROUND_MS = 24 * 60 * 60 * 1000;
 export const NEXT_ENTRY_MS = 60 * 60 * 1000;
 

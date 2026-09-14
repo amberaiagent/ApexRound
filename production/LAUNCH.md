@@ -1,5 +1,11 @@
 # ARENA launch record
 
+## Registration extension approved by the owner
+
+The owner extended the first registration period to **two hours from the original activation**, without resetting `activatedAt` (`1789420257927`). The new close / round #1 start is **2026-09-14 23:10:57.927 UTC** (September 15, **03:10:57.927 Asia/Tbilisi**), epoch `1789427457927`. The first round ends on **2026-09-15 23:10:57.927 UTC**. Later rounds remain 24 hours with a one-hour entry window. These revised times supersede the original 30-minute schedule recorded below.
+
+The duration is shared by the API, browser timer and round directory. Existing wallet signatures and archive rows are not rewritten; an outstanding request signed for the earlier schedule must be requested and signed again. Reload already-open pages after this schedule release. No test or organizer-added wallets are counted as confirmed registrations.
+
 ## Owner-approved ARENA activation
 
 The owner supplied and authorized final CA `0xe75333533f47d5109f2343d306061efdd14b9ddf`. It was activated on `https://arenarounds.xyz` through the existing operator CLI, without a code deployment or timer reset.

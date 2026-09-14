@@ -220,7 +220,7 @@ test('Detail routes handle duplicate/invalid query IDs and expose only real sche
   const page = runtime({ detail: true, query: '?round=1', eager: true });
   const detail = page.nodes.get('round-detail');
   assert.match(detail.textContent, /Round #001/);
-  assert.match(detail.textContent, /30 minutes/);
+  assert.match(detail.textContent, /two hours/);
   assert.match(detail.textContent, /Results and payouts are pending/);
   assert.match(detail.textContent, /Historical registration counts are not available/);
   const actions = detail.children.at(-1).children;

@@ -1,6 +1,6 @@
 import { config, pending } from './lib/config.js?v=arena-access-5m-20260914';
 import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from './lib/wallet.js?v=arena-access-5m-20260914';
-import { scheduleAt, countdown } from './lib/schedule.js';
+import { scheduleAt, countdown } from './lib/schedule.js?v=arena-entry-2h-20260915';
 
 const $ = selector => document.querySelector(selector);
 const stateNodes = id => document.querySelectorAll('#' + id + ', [data-state="' + id + '"]');
@@ -121,7 +121,7 @@ function renderArena() {
     refreshArena();
   }
   const end = first ? schedule.next.start : schedule.current?.end;
-  // The same main timer counts 30 minutes before round 1 and 24 hours during trading.
+  // The same main timer counts two hours before round 1 and 24 hours during trading.
   const remaining = clockFresh() && end ? countdown(end - serverNow()) : '—';
   const count = first ? arena?.nextParticipants : arena?.current?.id === schedule.current?.id ? arena?.participants : arena?.next?.id === schedule.current?.id ? arena?.nextParticipants : 0;
   const values = {
@@ -131,10 +131,10 @@ function renderArena() {
     'round-number': first ? '#001' : schedule.current ? '#' + String(schedule.current.id).padStart(3,'0') : 'Not started',
     'round-dates': schedule.current ? when(schedule.current.start) : first ? when(schedule.next.start) : 'First round to be announced',
     'timer-label': first ? 'REGISTRATION CLOSES IN' : schedule.current ? 'ROUND ENDS IN' : 'FIRST ROUND STARTS',
-    'timer': first && remaining !== '—' ? remaining.slice(3) : remaining,
-    'timer-note': !ready && arena ? 'Synchronizing with the arena' : first ? 'Round #1 starts when this reaches zero' : schedule.current ? '24-hour trading round' : '30-minute first entry window',
+    'timer': remaining,
+    'timer-note': !ready && arena ? 'Synchronizing with the arena' : first ? 'Round #1 starts when this reaches zero' : schedule.current ? '24-hour trading round' : 'two-hour first entry window',
     'launch-label': first ? 'REGISTRATION IS OPEN' : schedule.current ? 'THE ROUND IS LIVE' : 'THE FIRST ROUND',
-    'launch-note': syncError || (first ? 'Hold 5M $ARENA, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $ARENA token is activated, the main timer starts at 30:00 and registration opens. At zero, the first 24-hour round begins.'),
+    'launch-note': syncError || (first ? 'Hold 5M $ARENA, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $ARENA token is activated, the main timer starts at 02:00:00 and registration opens. At zero, the first 24-hour round begins.'),
     'traders-label': first ? 'REGISTERED FOR ROUND #1' : 'TRADERS IN THE ARENA',
     'traders': ready ? String(count ?? 0) : '—',
     'traders-note': first ? 'Confirmed registrations' : schedule.current ? 'Return data pending' : 'Registration has not opened',
@@ -144,7 +144,7 @@ function renderArena() {
     'next-label': schedule.next ? (first ? 'FIRST ROUND #1' : 'NEXT ROUND #' + schedule.next.id) : 'FIRST ROUND',
     'next-number': schedule.next ? '#' + String(schedule.next.id).padStart(3, '0') : 'Not started',
     'next-status': !ready ? 'Checking registration status' : registration?.open ? 'Registration open' : 'Registration not open',
-    'next-start': schedule.next ? (registration.open ? 'Starts ' : 'Entry opens ' + when(registration.opensAt) + '. Starts ') + when(schedule.next.start) + '.' : 'Starts 30 minutes after the official token is activated.',
+    'next-start': schedule.next ? (registration.open ? 'Starts ' : 'Entry opens ' + when(registration.opensAt) + '. Starts ') + when(schedule.next.start) + '.' : 'Starts two hours after the official token is activated.',
   };
   if (!arena) Object.assign(values, {
     'round-label':'ROUND', 'round-number':'—', 'round-dates':'Confirming the official schedule',
@@ -319,8 +319,8 @@ async function joinRound() {
   finally { busy = ''; await refreshArena(); renderEntry(); }
 }
 const faq = {
-  'When does the first round start?': 'Activating the official $ARENA token starts the main arena timer at 30:00 and opens registration. At zero, registration closes and the same timer switches to the first 24-hour trading round.',
-  'When can I join?': 'The first registration period lasts 30 minutes after token activation. For subsequent rounds, registration opens in the final hour of the current round. Check your 5M $ARENA balance, then register separately.',
+  'When does the first round start?': 'Activating the official $ARENA token starts the main arena timer at 02:00:00 and opens registration. At zero, registration closes and the same timer switches to the first 24-hour trading round.',
+  'When can I join?': 'The first registration period lasts two hours after token activation. For subsequent rounds, registration opens in the final hour of the current round. Check your 5M $ARENA balance, then register separately.',
   'Can I join a round after it starts?': 'No. Everyone starts together. The server rejects entries once the round starts.',
   'Does refreshing the page reset the timer?': 'No. Everyone shares one server schedule. Refreshing a page or restarting the site does not restart registration.',
   'Does +50% qualify?': 'No. Trading return measured in ETH must be strictly above +50%. Exactly +50% does not qualify.',

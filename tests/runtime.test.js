@@ -93,9 +93,9 @@ test('Optional repeated state fields share the same main timer and expire withou
   const status = new Element('span', { 'data-state': 'round-status' });
   const app = fixture({ nodes: [timer, repeated, status] });
   await settle();
-  assert.equal(timer.textContent, '30:00'); assert.equal(repeated.textContent, timer.textContent);
+  assert.equal(timer.textContent, '02:00:00'); assert.equal(repeated.textContent, timer.textContent);
   app.advance(1000);
-  assert.equal(timer.textContent, '29:59'); assert.equal(repeated.textContent, timer.textContent);
+  assert.equal(timer.textContent, '01:59:59'); assert.equal(repeated.textContent, timer.textContent);
   app.advance(44000);
   assert.equal(app.latest().ready, false);
   assert.equal(timer.textContent, '—'); assert.equal(repeated.textContent, '—');
@@ -121,7 +121,7 @@ test('Malformed or failed updates stop timer readiness while retaining the last 
     assert.equal(app.latest().state.activatedAt, activation);
   }
   app.response(liveState(activation + 2000)); app.window.dispatchEvent(new Event('focus')); await settle();
-  assert.equal(app.latest().ready, true); assert.equal(timer.textContent, '29:58');
+  assert.equal(app.latest().ready, true); assert.equal(timer.textContent, '01:59:58');
   app.response(liveState()); app.window.dispatchEvent(new Event('focus')); await settle();
   assert.equal(app.latest().ready, false, 'Older server snapshots cannot become fresh again');
 });

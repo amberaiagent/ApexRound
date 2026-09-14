@@ -1,4 +1,4 @@
-import { roundDirectory, roundDetail } from './lib/round-directory.js';
+import { roundDirectory, roundDetail } from './lib/round-directory.js?v=arena-entry-2h-20260915';
 
 const list = document.querySelector('#round-list');
 const detail = document.querySelector('#round-detail');
@@ -76,7 +76,7 @@ function renderDirectory() {
     button.setAttribute('aria-pressed', String(selected));
   }
   if (result.status === 'unavailable') list.append(empty('Round updates unavailable', 'We cannot verify the arena schedule right now. This page will reconnect automatically.'));
-  else if (result.status === 'prelaunch') list.append(empty('The first round is ahead.', 'Rounds will appear when the official token is activated. The first registration period lasts 30 minutes.'));
+  else if (result.status === 'prelaunch') list.append(empty('The first round is ahead.', 'Rounds will appear when the official token is activated. The first registration period lasts two hours.'));
   else if (!result.items.length) list.append(empty('No rounds found.', search?.value.trim() ? 'Try another round number or choose a different status.' : 'There are no rounds with this status yet.'));
   else list.append(...result.items.map(row));
   if (count) count.textContent = result.status !== 'available' ? '—' : result.total.toLocaleString('en-US') + (result.total === 1 ? ' round' : ' rounds');
@@ -128,7 +128,7 @@ function renderDetail() {
   grid.append(
     metric('Trading window', '24 hours', 'Starts ' + date(round.start) + '. Ends ' + date(round.end) + '.'),
     metric('Confirmed registrations', round.participants === null ? 'Unavailable' : round.participants.toLocaleString('en-US'), round.participants === null ? (round.status === 'ended' ? 'Historical registration counts are not available from the current arena feed.' : 'This round’s registration count is not available from the latest arena update.') : 'Confirmed by the latest arena update.'),
-    metric('Registration', round.id === 1 ? '30 minutes' : '1 hour', 'Opens ' + date(round.registration.opensAt) + '. Closes ' + date(round.registration.closesAt) + '.'),
+    metric('Registration', round.id === 1 ? 'two hours' : '1 hour', 'Opens ' + date(round.registration.opensAt) + '. Closes ' + date(round.registration.closesAt) + '.'),
     metric('Access requirement', '5M $ARENA', 'Connect your wallet, verify your balance and register before the round starts.'),
   );
   const notice = node('section', undefined, 'notice');

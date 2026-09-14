@@ -1,4 +1,4 @@
-import { FIRST_ENTRY_MS, ROUND_MS, NEXT_ENTRY_MS, scheduleAt } from './schedule.js';
+import { FIRST_ENTRY_MS, ROUND_MS, NEXT_ENTRY_MS, scheduleAt } from './schedule.js?v=arena-entry-2h-20260915';
 
 const MAX_DATE = 8_640_000_000_000_000;
 const filters = new Set(['all', 'live', 'upcoming', 'ended']);

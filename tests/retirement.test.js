@@ -145,7 +145,7 @@ test('Failure while archiving challenges rolls back the entire retirement includ
   assert.equal(store.launch(), null);
 });
 
-test('A new CA starts a clean 30-minute round one; retired CA and prior signatures cannot revive old access', async t => {
+test('A new CA starts a clean two-hour round one; retired CA and prior signatures cannot revive old access', async t => {
   const { store } = database(t);
   const { pending, wallet } = await seedHistory(store);
   store.retire(oldToken.address, start + 2000);

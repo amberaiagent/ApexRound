@@ -41,11 +41,11 @@ async function signed(service, wallet, roundId = 1) {
   return { nonce: challenge.nonce, signature: await wallet.signMessage(challenge.message) };
 }
 
-test('Shared schedule: 30-minute main timer, exact closure, 24-hour rollover and later entry hour', () => {
+test('Shared schedule: two-hour main timer, exact closure, 24-hour rollover and later entry hour', () => {
   assert.equal(scheduleAt(null, start).phase, 'prelaunch');
   const initial = scheduleAt(start, start);
   assert.equal(initial.registration.open, true);
-  assert.equal(countdown(initial.next.start - start).slice(3), '30:00');
+  assert.equal(countdown(initial.next.start - start), '02:00:00');
   assert.equal(scheduleAt(start, start + FIRST_ENTRY_MS - 1).registration.open, true);
   const first = scheduleAt(start, start + FIRST_ENTRY_MS);
   assert.equal(first.phase, 'live'); assert.equal(first.current.id, 1);
@@ -167,12 +167,12 @@ test('Unversioned legacy signatures remain valid after restart without rewriting
   const filename = path.join(dir, 'arena.sqlite');
   let store = new ArenaStore(filename);
   try {
-    store.activate(token, start);
+    store.activate(token, start + 30 * 60 * 1000 - FIRST_ENTRY_MS);
     const wallet = Wallet.createRandom(), address = wallet.address.toLowerCase();
     const legacy = {
       nonce: 'b'.repeat(48), address, roundId: 1, origin, chainId: token.chainId,
-      tokenAddress: token.address, startsAt: start + FIRST_ENTRY_MS,
-      endsAt: start + FIRST_ENTRY_MS + ROUND_MS, issuedAt: start, expiresAt: start + 300000,
+      tokenAddress: token.address, startsAt: start + 30 * 60 * 1000,
+      endsAt: start + 30 * 60 * 1000 + ROUND_MS, issuedAt: start, expiresAt: start + 300000,
     };
     // Frozen previous-release format: compatibility must preserve every byte.
     const oldMessage = [
@@ -205,7 +205,7 @@ test('Unversioned legacy signatures remain valid after restart without rewriting
     const prior = store.db.prepare('SELECT message, signature FROM entries WHERE address=?').get(priorAddress);
     assert.equal(prior.message, 'prior signed bytes');
     assert.equal(prior.signature, 'prior signature');
-    assert.deepEqual(store.launch(), { token, activatedAt: start });
+    assert.deepEqual(store.launch(), { token, activatedAt: start + 30 * 60 * 1000 - FIRST_ENTRY_MS });
     assert.equal(store.count(1), 2);
   } finally { store.close(); }
 });
@@ -253,7 +253,7 @@ test('The 5M upgrade preserves persisted v2 signed bytes and enforces their orig
   const previous = {
     messageVersion: 2, nonce: 'e'.repeat(48), address, roundId: 1,
     origin, chainId: token.chainId, tokenAddress: token.address,
-    startsAt: start + FIRST_ENTRY_MS, endsAt: start + FIRST_ENTRY_MS + ROUND_MS,
+    startsAt: start + 30 * 60 * 1000, endsAt: start + 30 * 60 * 1000 + ROUND_MS,
     issuedAt: start, expiresAt: start + 300000,
   };
   const message = [
@@ -269,7 +269,7 @@ test('The 5M upgrade preserves persisted v2 signed bytes and enforces their orig
   const rawPayload = JSON.stringify(previous, null, 2) + '\n';
   let store = new ArenaStore(filename);
   try {
-    store.activate(token, start);
+    store.activate(token, start + 30 * 60 * 1000 - FIRST_ENTRY_MS);
     store.saveChallenge(previous);
     store.db.prepare('UPDATE challenges SET payload=? WHERE nonce=?').run(rawPayload, previous.nonce);
     const priorWallet = Wallet.createRandom(), priorAddress = priorWallet.address.toLowerCase();
@@ -295,7 +295,7 @@ test('The 5M upgrade preserves persisted v2 signed bytes and enforces their orig
     assert.equal(accepted.signature, signature);
     assert.equal(store.db.prepare('SELECT payload FROM challenges WHERE nonce=?').get(previous.nonce).payload, rawPayload);
     assert.deepEqual(store.db.prepare('SELECT * FROM entries WHERE address=?').get(priorAddress), prior);
-    assert.deepEqual(store.launch(), { token, activatedAt: start });
+    assert.deepEqual(store.launch(), { token, activatedAt: start + 30 * 60 * 1000 - FIRST_ENTRY_MS });
   } finally { store.close(); }
 });
 
