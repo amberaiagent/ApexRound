@@ -41,16 +41,18 @@ export class ArenaService {
     this.eligibility = eligibility ?? ((token, address) => readEligibility(token, address, rpc, now));
   }
   state(address = null) {
-    const launch = this.store.launch(), serverNow = this.now();
-    const schedule = scheduleAt(launch?.activatedAt ?? null, serverNow);
-    return {
-      serverNow, activatedAt: launch?.activatedAt ?? null, token: launch?.token ?? null, ...schedule,
-      participants: schedule.current ? this.store.count(schedule.current.id) : 0,
-      nextParticipants: schedule.next ? this.store.count(schedule.next.id) : 0,
-      myCurrentEntry: address && schedule.current ? this.store.entry(schedule.current.id, address) : null,
-      myNextEntry: address && schedule.next ? this.store.entry(schedule.next.id, address) : null,
-      resultsStatus: 'not-connected', pool: null,
-    };
+    return this.store.snapshot(() => {
+      const launch = this.store.launch(), serverNow = this.now();
+      const schedule = scheduleAt(launch?.activatedAt ?? null, serverNow);
+      return {
+        serverNow, activatedAt: launch?.activatedAt ?? null, token: launch?.token ?? null, ...schedule,
+        participants: schedule.current ? this.store.count(schedule.current.id) : 0,
+        nextParticipants: schedule.next ? this.store.count(schedule.next.id) : 0,
+        myCurrentEntry: address && schedule.current ? this.store.entry(schedule.current.id, address) : null,
+        myNextEntry: address && schedule.next ? this.store.entry(schedule.next.id, address) : null,
+        resultsStatus: 'not-connected', pool: null,
+      };
+    });
   }
   assertOpen(roundId) {
     const state = this.state();
@@ -60,36 +62,43 @@ export class ArenaService {
   challenge({ address: input, roundId }, origin) {
     const address = addressOf(input);
     if (!Number.isSafeInteger(roundId) || roundId < 1) fail(400, 'Invalid round.');
-    const state = this.assertOpen(roundId);
-    if (this.store.entry(roundId, address)) fail(409, 'This wallet is already registered for this round.');
-    const entry = {
-      messageVersion: ENTRY_MESSAGE_VERSION,
-      nonce: randomBytes(24).toString('hex'), address, roundId, origin,
-      chainId: state.token.chainId, tokenAddress: state.token.address,
-      startsAt: state.next.start, endsAt: state.next.end,
-      issuedAt: state.serverNow, expiresAt: Math.min(state.serverNow + 300000, state.registration.closesAt),
-    };
-    this.store.saveChallenge(entry);
-    return { ...entry, message: entryMessage(entry) };
+    return this.store.transaction(() => {
+      const state = this.assertOpen(roundId);
+      if (this.store.entry(roundId, address)) fail(409, 'This wallet is already registered for this round.');
+      const entry = {
+        messageVersion: ENTRY_MESSAGE_VERSION,
+        nonce: randomBytes(24).toString('hex'), address, roundId, origin,
+        chainId: state.token.chainId, tokenAddress: state.token.address,
+        startsAt: state.next.start, endsAt: state.next.end,
+        issuedAt: state.serverNow, expiresAt: Math.min(state.serverNow + 300000, state.registration.closesAt),
+      };
+      this.store.saveChallenge(entry);
+      return { ...entry, message: entryMessage(entry) };
+    });
   }
   async register({ nonce, signature }, origin) {
     if (typeof nonce !== 'string' || !/^[0-9a-f]{48}$/.test(nonce) || typeof signature !== 'string' || !/^0x(?:[0-9a-f]{128}|[0-9a-f]{130})$/i.test(signature)) fail(400, 'Invalid signed registration.');
     const entry = this.store.challenge(nonce);
     if (!entry || entry.used || entry.expiresAt <= this.now() || entry.origin !== origin) fail(409, 'This registration request expired or was already used. Please try again.');
     const state = this.assertOpen(entry.roundId);
-    if (state.token.address !== entry.tokenAddress || state.token.chainId !== entry.chainId) fail(409, 'Access token changed. Request a new entry.');
+    const matchesLaunch = current => current.token.address === entry.tokenAddress
+      && current.token.chainId === entry.chainId && current.activatedAt === state.activatedAt
+      && current.next.start === entry.startsAt && current.next.end === entry.endsAt;
+    if (!matchesLaunch(state)) fail(409, 'Access token changed. Request a new entry.');
+    const message = entryMessage(entry);
     let signer;
-    try { signer = verifyMessage(entryMessage(entry), signature).toLowerCase(); } catch { fail(401, 'The wallet signature is invalid.'); }
+    try { signer = verifyMessage(message, signature).toLowerCase(); } catch { fail(401, 'The wallet signature is invalid.'); }
     if (signer !== entry.address) fail(401, 'The signature belongs to a different wallet.');
     if (this.store.entry(entry.roundId, entry.address)) fail(409, 'This wallet is already registered for this round.');
     const balance = await this.eligibility(state.token, entry.address);
     return this.store.transaction(() => {
       // Recheck the authoritative window AFTER the signature and RPC calls.
-      this.assertOpen(entry.roundId);
+      if (!matchesLaunch(this.assertOpen(entry.roundId))) fail(409, 'Access token changed. Request a new entry.');
       const current = this.store.challenge(nonce), acceptedAt = this.now();
       if (!current || current.used || current.expiresAt <= acceptedAt) fail(409, 'The entry window or registration request has expired.');
+      if (entryMessage(current) !== message) fail(409, 'The registration request changed. Request a new entry.');
       if (this.store.entry(entry.roundId, entry.address)) fail(409, 'This wallet is already registered for this round.');
-      this.store.db.prepare('INSERT INTO entries VALUES(?,?,?,?,?,?,?,?)').run(entry.roundId, entry.address, acceptedAt, balance.balance, balance.block, balance.blockHash, entryMessage(entry), signature);
+      this.store.db.prepare('INSERT INTO entries VALUES(?,?,?,?,?,?,?,?)').run(entry.roundId, entry.address, acceptedAt, balance.balance, balance.block, balance.blockHash, message, signature);
       this.store.db.prepare('UPDATE challenges SET used=1 WHERE nonce=?').run(nonce);
       return this.store.entry(entry.roundId, entry.address);
     });

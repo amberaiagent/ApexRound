@@ -1,6 +1,6 @@
 // Public configuration only. Never put an RPC API key or a private key here.
 // Network parameters: https://docs.robinhood.com/chain/connecting/
-import { accessToken } from './access-token.js';
+import { accessToken } from './access-token.js?v=arena-new-token-20260914';
 
 if (accessToken.chainId !== 4663) throw new Error('Access token network does not match Robinhood Chain.');
 if (accessToken.address !== null && (!/^0x[0-9a-f]{40}$/i.test(accessToken.address)

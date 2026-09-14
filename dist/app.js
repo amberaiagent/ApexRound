@@ -1,4 +1,4 @@
-import { config, pending } from './lib/config.js?v=arena-token-20260914';
+import { config, pending } from './lib/config.js?v=arena-new-token-20260914';
 import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from './lib/wallet.js?v=arena-pages-20260914';
 import { scheduleAt, countdown } from './lib/schedule.js';
 
@@ -174,7 +174,7 @@ function renderParticipation(schedule = view()) {
   stateText('my-participation', unavailable || (currentEntry ? 'You are participating in round #' + currentEntry.roundId + (nextEntry ? ' and registered for round #' + nextEntry.roundId + '.' : '.') : nextEntry ? 'Your entry for round #' + nextEntry.roundId + ' is saved.' : 'No confirmed entry for the current or next round.'));
 }
 function renderEntry() {
-  const schedule = view(), registered = targetEntry(schedule);
+  const schedule = view(), ready = fresh(), registered = ready ? targetEntry(schedule) : null;
   const connect = $('#connect');
   if (connect) {
     connect.textContent = busy === 'resume' ? 'Restoring wallet…' : wallet.address ? short(wallet.address) + ' · Disconnect' : 'Connect wallet ↗';
@@ -186,18 +186,20 @@ function renderEntry() {
   if (!panel) return;
   panel.replaceChildren();
   if (!wallet.address) {
-    panel.append(text('p', !arena ? 'Connect your wallet to check access and entry status.' : settings.tokenAddress ? 'Connect your wallet, check your 10M $ARENA balance and register during the entry period.' : 'Connect your wallet to get ready. The official $ARENA token has not been activated yet.'));
+    panel.append(text('p', !ready ? 'Connect your wallet to check access and entry status.' : settings.tokenAddress ? 'Connect your wallet, check your 10M $ARENA balance and register during the entry period.' : 'Connect your wallet to get ready. The official $ARENA token has not been activated yet.'));
     panel.append(button('Connect wallet ↗', openWallets));
   } else {
     panel.append(text('p', 'Connected: ' + short(wallet.address), 'wallet-address'));
-    const currentEntry = [arena?.myCurrentEntry,arena?.myNextEntry].find(entry => entry?.roundId === schedule.current?.id);
+    const currentEntry = ready && [arena?.myCurrentEntry,arena?.myNextEntry].find(entry => entry?.roundId === schedule.current?.id);
     if (currentEntry) panel.append(text('p', 'Participating in round #' + currentEntry.roundId + '. Trading results are pending.', 'return'));
     if (wallet.chainId !== settings.network.chainId) {
       panel.append(text('p', 'Your wallet is on a different network. ARENA uses Robinhood Chain.', 'outside'));
       panel.append(button(busy === 'network' ? 'Check your wallet…' : 'Switch to Robinhood Chain', switchNetwork));
     } else {
       panel.append(text('p', 'Robinhood Chain connected', 'return'));
-      if (!settings.tokenAddress || settings.decimals === null) {
+      if (!ready) {
+        panel.append(text('p', 'Token access is unavailable until the arena connection is verified.'));
+      } else if (!settings.tokenAddress || settings.decimals === null) {
         panel.append(text('p', '$ARENA token details are coming soon. The main timer and registration start after the official contract is activated.'));
       } else {
         const token = text('a', 'View $ARENA contract ↗', 'token-link');
@@ -291,10 +293,17 @@ async function switchNetwork() {
   finally { busy = ''; renderEntry(); }
 }
 async function checkBalance() {
-  if (busy) return;
+  if (busy || !fresh() || !settings.tokenAddress || settings.decimals === null) return;
+  const checkedToken = settings.tokenAddress, checkedDecimals = settings.decimals;
+  const checkedLaunch = arena.activatedAt, checkedAddress = wallet.address;
+  const stillCurrent = () => fresh() && settings.tokenAddress === checkedToken && settings.decimals === checkedDecimals
+    && arena?.activatedAt === checkedLaunch && wallet.address === checkedAddress;
   busy = 'balance'; snapshot = null; message = ''; renderEntry();
-  try { snapshot = await wallet.checkBalance(settings); }
-  catch (error) { message = walletError(error); }
+  try {
+    const result = await wallet.checkBalance(settings);
+    if (stillCurrent()) snapshot = result;
+  }
+  catch (error) { if (stillCurrent()) message = walletError(error); }
   finally { busy = ''; renderEntry(); }
 }
 async function joinRound() {

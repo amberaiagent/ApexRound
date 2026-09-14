@@ -1,4 +1,4 @@
-import { config } from './lib/config.js';
+import { mountTokenPanel } from './lib/token-panel.js';
 
 const menu = document.querySelector('#menu-toggle');
 const nav = document.querySelector('#main-nav');
@@ -22,22 +22,7 @@ document.addEventListener('click', event => {
 nav?.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
 matchMedia('(min-width: 1051px)').addEventListener('change', closeMenu);
 
-const address = document.querySelector('#access-contract');
-const copy = document.querySelector('#copy-contract');
-const explorer = document.querySelector('#contract-explorer');
-if (address) address.textContent = config.tokenAddress || 'Contract not announced';
-if (explorer && config.tokenAddress) {
-  explorer.href = config.network.blockExplorerUrls[0] + '/token/' + config.tokenAddress;
-  explorer.hidden = false;
-}
-if (copy && config.tokenAddress) {
-  copy.disabled = false;
-  copy.addEventListener('click', async () => {
-    const status = document.querySelector('#copy-status');
-    try { await navigator.clipboard.writeText(config.tokenAddress); status.textContent = 'Contract address copied.'; }
-    catch { status.textContent = 'Select and copy the address above.'; }
-  });
-}
+mountTokenPanel({document, window, navigator});
 
 // Keep existing bookmarks useful after the move from sections to real pages.
 if (document.body.dataset.page === 'home') {

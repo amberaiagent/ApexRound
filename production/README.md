@@ -8,7 +8,7 @@
 - Rate/body/concurrency limits, no-store API responses, durable entry receipts and RPC block references. No public activation endpoint.
 - Private server database outside the web root and Git, with backup procedure in `deploy/README.md`.
 
-The owner supplied and authorized **0xfb57c3f37c6122817981c8ac94b24a1b844f766a** (Apex / APEX, 18 decimals). The contract passed real read-only RPC inspection. See `TOKEN.md`; `/api/arena` reports the actual activation and phase. Connecting and reading a balance request no signature; joining requests an explicit registration-message signature. No approval, payment, staking or private signing key is used.
+The owner has retired the previous access token and will supply a new CA. Registration is closed until that new token is verified and explicitly activated. See `TOKEN.md`; `/api/arena` reports the actual activation and phase. Connecting and reading a balance request no signature; joining requests an explicit registration-message signature. No approval, payment, staking or private signing key is used.
 
 ## Work still required before a completed trading competition
 1. **Final rules:** eligible assets/venues, minimum portfolio, required holding period, treatment of $APEX, tie-breaking, valuation method, fee source/payout currency, fewer-than-ten and zero-winner handling, review/payment timing.

@@ -211,3 +211,75 @@ test('Same-address wallet network changes cannot publish missing saved entries a
   assert.equal(app.latest().ready, true);
   assert.equal(nextEntry.textContent, 'Registered for round #1');
 });
+
+test('Stale or retired access state removes contract and balance actions from a connected entry panel', async () => {
+  const calls = [], provider = new EventEmitter();
+  provider.request = async ({ method }) => {
+    calls.push(method);
+    if (method === 'eth_accounts') return [address];
+    if (method === 'eth_chainId') return config.network.chainId;
+    throw Error('A stale balance action must not issue an RPC request');
+  };
+  const panel = element('entry-content'), app = fixture({ provider, preference: 'injected', nodes: [panel] });
+  await settle();
+  assert.ok(panel.children.some(node => node.tagName === 'a' && node.href?.includes(token.address)));
+  const oldBalanceButton = panel.children.find(node => node.tagName === 'button' && node.textContent === 'Check balance');
+  assert.ok(oldBalanceButton);
+  const before = [...calls];
+  app.response(new Error('Offline after token retirement'));
+  app.window.dispatchEvent(new Event('focus')); await settle();
+  assert.equal(app.latest().ready, false);
+  assert.ok(!panel.children.some(node => node.tagName === 'a' && node.href?.includes(token.address)));
+  assert.ok(!panel.children.some(node => node.tagName === 'button' && /Check balance|Join round/.test(node.textContent)));
+  const afterRefresh = [...calls];
+  oldBalanceButton.dispatchEvent(new Event('click')); await settle();
+  assert.deepEqual(calls, afterRefresh, 'A previously rendered balance button cannot use a stale token');
+  assert.ok(calls.length >= before.length);
+  const now = activation + 2000;
+  app.response({ serverNow: now, activatedAt: null, token: null, ...scheduleAt(null, now),
+    participants: 0, nextParticipants: 0, myCurrentEntry: null, myNextEntry: null, pool: null });
+  app.window.dispatchEvent(new Event('focus')); await settle();
+  assert.equal(app.latest().ready, true);
+  assert.equal(app.latest().schedule.phase, 'prelaunch');
+  assert.match(panel.textContent, /token details are coming soon/);
+  assert.ok(!panel.children.some(node => node.tagName === 'a' && node.href?.includes(token.address)));
+  assert.ok(!panel.children.some(node => node.tagName === 'button' && /Check balance|Join round/.test(node.textContent)));
+});
+
+test('An old balance response cannot restore eligibility after retirement and a replacement launch', async () => {
+  const provider = new EventEmitter();
+  let releaseBalance;
+  const balanceResult = new Promise(resolve => { releaseBalance = resolve; });
+  provider.request = async ({ method, params }) => {
+    if (method === 'eth_accounts') return [address];
+    if (method === 'eth_chainId') return config.network.chainId;
+    if (method === 'eth_blockNumber') return '0x100';
+    if (method === 'eth_getCode') return '0x6001';
+    if (method === 'eth_call' && params[0].data === '0x313ce567') return '0x' + BigInt(token.decimals).toString(16).padStart(64, '0');
+    if (method === 'eth_call') return balanceResult;
+    throw Error('Unexpected wallet request: ' + method);
+  };
+  const panel = element('entry-content'), app = fixture({ provider, preference: 'injected', nodes: [panel] });
+  await settle();
+  panel.children.find(node => node.textContent === 'Check balance').dispatchEvent(new Event('click'));
+  await settle();
+  const retiredAt = activation + 2000;
+  app.response({ serverNow: retiredAt, activatedAt: null, token: null, ...scheduleAt(null, retiredAt),
+    participants: 0, nextParticipants: 0, myCurrentEntry: null, myNextEntry: null, pool: null });
+  app.window.dispatchEvent(new Event('focus')); await settle();
+  assert.equal(app.latest().schedule.phase, 'prelaunch');
+  const newStart = activation + 3000, replacement = { ...token, address: '0x' + '4'.repeat(40), decimals: 6 };
+  app.response({ serverNow: newStart, activatedAt: newStart, token: replacement, ...scheduleAt(newStart, newStart),
+    participants: 0, nextParticipants: 0, myCurrentEntry: null, myNextEntry: null, pool: null });
+  app.window.dispatchEvent(new Event('focus')); await settle();
+  releaseBalance('0x' + (10000000n * 10n ** 18n).toString(16).padStart(64, '0'));
+  await settle();
+  assert.equal(app.latest().state.token.address, replacement.address);
+  assert.ok(panel.children.some(node => node.tagName === 'a' && node.href?.includes(replacement.address)));
+  assert.ok(!panel.children.some(node => node.tagName === 'a' && node.href?.includes(token.address)));
+  assert.doesNotMatch(panel.textContent, /Balance requirement met|Your balance:/);
+  assert.ok(panel.children.some(node => node.textContent === 'Check balance'));
+  const join = panel.children.find(node => node.tagName === 'button' && node.textContent.startsWith('Join round'));
+  assert.ok(join);
+  assert.equal(join.disabled, true, 'The replacement contract needs its own balance check');
+});

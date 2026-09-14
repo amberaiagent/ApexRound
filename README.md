@@ -1,6 +1,6 @@
 # ARENA — Your edge. Your arena.
 
-The public brand and displayed access ticker are **ARENA / $ARENA**, with the supplied logo, `#f4f4f4` background and `#7d6db3` accent. The interface uses large sans-serif typography and geometric layouts. The configured contract and stored launch time are unchanged; verified onchain metadata below records its original Apex / APEX name. New registration messages use the ARENA brand and a persisted message version, while previously issued challenges retain their exact original signing text. For a design-only update, use `deploy/static.py` as documented in `deploy/README.md`; signature or API changes require the full installer.
+The public brand and displayed access ticker are **ARENA / $ARENA**, with the supplied logo, `#f4f4f4` background and `#7d6db3` accent. The interface uses large sans-serif typography and geometric layouts. The previous access token has been retired at the owner's request; the interface is waiting for a new contract. Registration messages use the ARENA brand and a persisted message version. For a design-only update, use `deploy/static.py` as documented in `deploy/README.md`; signature or API changes require the full installer.
 
 ## Run locally
 
@@ -30,7 +30,7 @@ Website: https://apex-round.com, on the owner's VPS with HTTPS.
 Delivery is manual: pushing to GitHub does not deploy. See `deploy/README.md`. Only `dist/` is served as files; the registration API runs separately. Development stays local. Do not publish or update the previous Sites-hosted copy.
 
 ## Current release
-The owner-approved token is **Apex / APEX**, Robinhood Chain, contract **0xfb57c3f37c6122817981c8ac94b24a1b844f766a**, 18 decimals. Live activation and phase are authoritative in the server database and visible at `/api/arena`. No sample CA, fabricated traders, pool or results are installed.
+The owner is replacing the access token. Public token metadata is empty, the previous launch is archived by the operator, and `/api/arena` is the authority for the current token and launch. Until a new CA is explicitly supplied and activated, registration remains closed. No placeholder address is installed.
 
 - The **existing main arena timer** starts at **30:00** when the operator activates the owner's final CA on the server. Registration opens immediately.
 - At zero, registration closes and **the same timer** counts down the first 24-hour round. Later rounds accept entries during the current round's final hour.
