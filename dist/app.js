@@ -146,6 +146,14 @@ function renderArena() {
     'next-status': !ready ? 'Checking registration status' : registration?.open ? 'Registration open' : 'Registration not open',
     'next-start': schedule.next ? (registration.open ? 'Starts ' : 'Entry opens ' + when(registration.opensAt) + '. Starts ') + when(schedule.next.start) + '.' : 'Starts 30 minutes after the official token is activated.',
   };
+  if (!arena) Object.assign(values, {
+    'round-label':'ROUND', 'round-number':'—', 'round-dates':'Confirming the official schedule',
+    'timer-label':'ROUND COUNTDOWN', 'timer-note':'Synchronizing with the arena',
+    'launch-label':'ROUND SCHEDULE', 'launch-note':syncError || 'Connecting to the official arena schedule.',
+    'traders-label':'CONFIRMED ENTRIES', 'traders-note':'Checking registrations',
+    'board-message':'Waiting for the current round status.', 'next-label':'NEXT ROUND',
+    'next-number':'—', 'next-start':'Confirming the next registration window.',
+  });
   for (const [id, value] of Object.entries(values)) stateText(id, value);
   for (const node of stateNodes('round-status')) node.classList.toggle('awaiting', !ready || schedule.phase === 'prelaunch');
   renderParticipation(schedule);
@@ -178,7 +186,7 @@ function renderEntry() {
   if (!panel) return;
   panel.replaceChildren();
   if (!wallet.address) {
-    panel.append(text('p', settings.tokenAddress ? 'Connect your wallet, check your 10M $ARENA balance and register during the entry period.' : 'Connect your wallet to get ready. The official $ARENA token has not been activated yet.'));
+    panel.append(text('p', !arena ? 'Connect your wallet to check access and entry status.' : settings.tokenAddress ? 'Connect your wallet, check your 10M $ARENA balance and register during the entry period.' : 'Connect your wallet to get ready. The official $ARENA token has not been activated yet.'));
     panel.append(button('Connect wallet ↗', openWallets));
   } else {
     panel.append(text('p', 'Connected: ' + short(wallet.address), 'wallet-address'));
