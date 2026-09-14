@@ -10,7 +10,7 @@ export const pages = [
   ['round', '/rounds/view/', 'Round details — ARENA', 'Round timing, registration windows and the status of verified results.'],
   ['my-arena', '/my-arena/', 'My arena — ARENA', 'Your wallet, access eligibility and confirmed round entries in one place.'],
   ['guide', '/guide/', 'How to play — ARENA', 'Learn how to connect, qualify and enter an ARENA trading round.'],
-  ['token', '/token/', '$ARENA access — ARENA', 'The official access contract, network and 10 million token entry requirement.'],
+  ['token', '/token/', '$ARENA access — ARENA', 'The official access contract, network and 5 million token entry requirement.'],
   ['rules', '/rules/', 'The rulebook — ARENA', 'Read the confirmed competition rules, entry requirements and terms awaiting final confirmation.'],
 ];
 const source = async relative => (await readFile(path.join(root, relative), 'utf8')).replaceAll('\r\n', '\n');

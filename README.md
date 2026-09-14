@@ -35,7 +35,7 @@ The owner is replacing the access token. Public token metadata is empty, the pre
 - The **existing main arena timer** starts at **30:00** when the operator activates the owner's final CA on the server. Registration opens immediately.
 - At zero, registration closes and **the same timer** counts down the first 24-hour round. Later rounds accept entries during the current round's final hour.
 - Activation is stored once in SQLite. Page reloads, repeated activation of the same CA and service restarts do not reset it.
-- Wallet connection and balance checking are separate from entry. Joining explicitly signs a readable, single-round message. The server verifies the signature, nonce, deadline and exact 10,000,000-token balance through a trusted RPC.
+- Wallet connection and balance checking are separate from entry. Joining explicitly signs a readable, single-round message. The server verifies the signature, nonce, deadline and exact 5,000,000-token balance through a trusted RPC.
 - No token approvals, transfers, locking or payment keys are involved.
 - Portfolio ingestion, valuation, live results and payouts are still pending. This release prepares timing and registration, not the completed trading/results system.
 

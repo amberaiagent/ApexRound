@@ -1,4 +1,5 @@
 // Standard ERC-20 read methods only. This module cannot sign or send transactions.
+import { REQUIRED_ACCESS_TOKENS } from '../../dist/lib/access-policy.js';
 const WORD = /^0x[0-9a-f]{64}$/i;
 const HEX = /^0x(?:[0-9a-f]{2})+$/i;
 const HASH = /^0x[0-9a-f]{64}$/i;
@@ -75,7 +76,7 @@ export function makeRpc(endpoint, fetchImpl = fetch) {
   };
 }
 
-export async function inspectToken({ address: input, rpc, chainId = 4663, required = 10000000n }) {
+export async function inspectToken({ address: input, rpc, chainId = 4663, required = REQUIRED_ACCESS_TOKENS }) {
   const address = normalizeAddress(input);
   const actualChain = await rpc('eth_chainId');
   if (typeof actualChain !== 'string' || !/^0x[0-9a-f]+$/i.test(actualChain) || BigInt(actualChain) !== BigInt(chainId)) {
@@ -98,7 +99,7 @@ export async function inspectToken({ address: input, rpc, chainId = 4663, requir
   const decimals = Number(decimalValue), supply = uint256(rawSupply, 'totalSupply');
   uint256(rawBalance, 'balanceOf');
   if (required <= 0n || supply < required * 10n ** decimalValue) {
-    throw Error('Token supply is below the required 10,000,000-token access threshold.');
+    throw Error('Token supply is below the required ' + required.toLocaleString('en-US') + '-token access threshold.');
   }
   const name = decodeText(rawName, 'name'), symbol = decodeText(rawSymbol, 'symbol');
   const confirmed = await rpc('eth_getBlockByNumber', [block.number, false]);

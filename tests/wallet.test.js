@@ -113,9 +113,12 @@ test('Missing token configuration cannot grant eligibility or issue token RPC re
 
 test('Balance uses one block, exact token decimals and integer threshold including one wei short', async () => {
   const provider = new Provider(), wallet = new BrowserWallet();
+  assert.equal(config.required, 5000000n);
+  provider.balance = 5000000n * 10n ** 18n;
   await wallet.connect(provider);
   let result = await wallet.checkBalance(settings);
   assert.equal(result.eligible, true);
+  assert.equal(result.required, 5000000n * 10n ** 18n);
   assert.equal(result.missing, 0n);
   provider.balance--;
   result = await wallet.checkBalance(settings);

@@ -1,4 +1,4 @@
-import { entryMessage } from './entry-message.js?v=arena-token-20260914';
+import { entryMessage } from './entry-message.js?v=arena-access-5m-20260914';
 const isAddress = value => typeof value === 'string' && /^0x[0-9a-f]{40}$/i.test(value);
 const account = accounts => Array.isArray(accounts) && isAddress(accounts[0]) ? accounts[0].toLowerCase() : null;
 const chain = value => {
