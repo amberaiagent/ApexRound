@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f4f4f4">
+  <meta name="description" content="Round timing, registration windows and the status of verified results.">
+  <title>Round details — ARENA</title>
+  <link rel="canonical" href="https://apex-round.com/rounds/view/">
+  <link rel="icon" type="image/png" href="/assets/arena-logo.png">
+  <link rel="stylesheet" href="/style.css?v=arena-pages-20260914">
+  <link rel="stylesheet" href="/motion.css?v=arena-pages-20260914">
+  <link rel="stylesheet" href="/interactions.css?v=arena-pages-20260914">
+  <link rel="stylesheet" href="/pages.css?v=arena-pages-20260914">
+</head>
+<body data-page="round">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="brand" href="/" aria-label="ARENA home"><span class="logo-mark"><img src="/assets/arena-logo.png" alt="" width="2000" height="2000"></span><span>ARENA</span></a>
+  <nav id="main-nav" aria-label="Main navigation"><a href="/arena/">The arena</a><a href="/rounds/" aria-current="page">Rounds</a><a href="/guide/">How to play</a><a href="/token/">$ARENA</a><a href="/rules/">Rules</a><a class="mobile-account" href="/my-arena/">My arena</a></nav>
+  <div class="header-actions"><a class="account-link" href="/my-arena/">My arena</a><button id="connect" class="outline" type="button">Connect wallet</button><button id="menu-toggle" class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open navigation"><span></span><span></span></button></div>
+</header>
+<main id="main" tabindex="-1"><div class="breadcrumb"><a href="/">Home</a><span>/</span><a href="/rounds/">Rounds</a><span>/</span><span>Round details</span></div>
+<section class="page-heading compact"><div><span class="eyebrow">THE FULL PICTURE</span><h1>Inside the round<span class="accent">.</span></h1></div><a class="outline" href="/rounds/">All rounds</a></section>
+<div id="round-detail" class="round-detail"><div class="empty-state"><p>Loading round details…</p></div></div>
+<script type="module" src="/rounds.js?v=arena-pages-20260914"></script>
+</main>
+<footer class="site-footer">
+  <div class="footer-top"><div><a class="brand" href="/" aria-label="ARENA home"><span class="logo-mark"><img src="/assets/arena-logo.png" alt="" width="2000" height="2000" loading="lazy"></span><span>ARENA</span></a><p>Your edge. Your arena.</p></div><div class="footer-links"><div><span class="eyebrow">COMPETE</span><a href="/arena/">The arena</a><a href="/rounds/">Round directory</a><a href="/my-arena/">My arena</a></div><div><span class="eyebrow">GET TO KNOW US</span><a href="/guide/">How to play</a><a href="/token/">$ARENA access</a><a href="/rules/">The rulebook</a></div></div></div>
+  <div class="footer-bottom"><span>Independent project. Not affiliated with Robinhood.</span><span>Built on Robinhood Chain</span><button id="motion-toggle" class="motion-toggle" type="button" aria-label="Pause animations" hidden><span class="motion-symbol" aria-hidden="true"></span><span class="motion-label">Motion on</span></button><a href="#main" class="back-top" aria-label="Back to top">↑</a></div>
+</footer>
+<dialog id="wallet-dialog" aria-labelledby="wallet-title">
+  <button id="close-dialog" aria-label="Close" class="close" type="button">×</button>
+  <span class="eyebrow">ARENA / YOUR WALLET</span><h2 id="wallet-title">Make your<br>next move.</h2>
+  <p>Choose your browser wallet. Connecting shares your public address; it does not enter a round.</p>
+  <div id="wallet-list"></div><p id="wallet-error" class="outside" role="alert"></p>
+  <p class="muted">No signature, approval or payment is requested to connect or read a balance.</p><p class="muted">Joining a round asks you to sign a message naming that round. Your balance is checked before entry is confirmed.</p>
+</dialog>
+<div id="toast" role="status"></div>
+<script type="module" src="/app.js?v=arena-pages-20260914"></script>
+<script type="module" src="/site.js?v=arena-pages-20260914"></script>
+<script type="module" src="/motion.js?v=arena-pages-20260914"></script>
+</body>
+</html>

@@ -4,11 +4,23 @@ The public brand and displayed access ticker are **ARENA / $ARENA**, with the su
 
 ## Run locally
 
-Decorative motion is isolated in `dist/motion.js`, `dist/motion.css` and `dist/interactions.css`: independently floating rings, pointer response, scroll entrances and finite UI feedback. The hero's motion control remembers a local pause preference; reduced-motion settings are respected, and the rings stop while offscreen or in a hidden tab. The page remains readable without this enhancement.
+Decorative motion is isolated in `dist/motion.js`, `dist/motion.css` and `dist/interactions.css`: independently floating rings, pointer response, scroll entrances and finite UI feedback. The shared footer's motion control remembers a local pause preference; reduced-motion settings are respected, and the rings stop while offscreen or in a hidden tab. All pages remain readable without this enhancement.
 
-Double-click `START-APEX.cmd`, or run `npm ci` once, then `npm start` and open http://127.0.0.1:4173. Node 22.12+ is required locally; Node 24 runs the VPS service. The authored website is in `dist/`. There is no ChatGPT sign-in or frontend build.
+Double-click `START-APEX.cmd`, or run `npm ci` once, then `npm run build` and `npm start` and open http://127.0.0.1:4173. Node 22.12+ is required locally; Node 24 runs the VPS service. Edit HTML in `site/`, then run `npm run build` to generate the eight static pages in `dist/`. Browser scripts and styles are authored in `dist/`. There is no ChatGPT sign-in or framework dependency.
 
-Run `npm test` for the rule, wallet, token inspection and registration tests.
+Run `npm run build` and `npm test` before delivery. Tests also verify generated pages, links, directory filters and cross-page wallet continuity.
+
+## Pages
+- `/`: concise brand homepage with a live round summary.
+- `/arena/`: round clock, actual registration counts and entry panel.
+- `/rounds/`: search, status filters and pagination across scheduled rounds.
+- `/rounds/view/?round=N`: individual round timing and result status.
+- `/my-arena/`: wallet identity, eligibility actions and confirmed entries.
+- `/guide/`: onboarding chapters and common questions.
+- `/token/`: access requirement, exact contract copy and explorer link.
+- `/rules/`: confirmed format and clearly identified pending terms.
+
+Navigation uses real documents and works with direct links and refresh. Old `#arena`, `#how` and `#history` bookmarks redirect to their new pages. A previously selected wallet can resume through read-only `eth_accounts`; navigation never requests permissions, signs, checks balances or registers automatically. Live fields on all pages use the same authoritative API and schedule. Past trading windows do not imply verified results.
 
 ## Delivery
 Source: https://github.com/amberaiagent/ApexRound, branch `main`.
@@ -30,7 +42,11 @@ The owner-approved token is **Apex / APEX**, Robinhood Chain, contract **0xfb57c
 See `production/TOKEN.md` for final-token activation and `production/README.md` for remaining launch dependencies.
 
 ## Structure
-- `dist/index.html`, `style.css`, `app.js`: public interface.
+- `site/layout.html`, `site/pages/`, `site/components/`: shared layout, page content and components.
+- `scripts/build-site.mjs`: deterministic, dependency-free static page generator.
+- `dist/style.css`, `pages.css`, `site.js`: shared visual primitives, page layouts and navigation.
+- `dist/app.js`: optional page-bound state fields, wallet UI and API synchronization.
+- `dist/rounds.js`, `dist/lib/round-directory.js`: real schedule directory and detail views.
 - `dist/lib/schedule.js`: shared 30-minute / 24-hour schedule.
 - `dist/lib/wallet.js`, `entry-message.js`: injected wallet and explicit entry signature.
 - `api/`: authoritative schedule, SQLite entries, trusted balance checks, operator activation CLI.
@@ -39,4 +55,4 @@ See `production/TOKEN.md` for final-token activation and `production/README.md` 
 - `tests/fixtures/`: historical demo fixtures, never deployed.
 
 ## Validation
-34 automated tests cover timer boundaries, durable activation, signature verification, replay/duplicate rejection, late entries, exact balances, stale RPC/reorgs, HTTP restrictions and existing wallet/rule checks. Browser QA covers the main timer and registration-to-live transition. The final contract passed real read-only RPC inspection. The QA browser has no installed wallet; actual extension signing remains unverified.
+Automated tests cover timer boundaries, durable activation, signature verification, replay/duplicate rejection, late entries, exact balances, stale RPC/reorgs, HTTP restrictions, deterministic page generation, internal links, directory filters, detail IDs, partial DOM layouts and read-only wallet continuity. Browser QA covers desktop/mobile navigation, FAQ, wallet dialog and live round views. The final contract passed real read-only RPC inspection. The QA browser has no installed wallet; actual extension signing remains unverified.

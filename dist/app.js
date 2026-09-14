@@ -1,20 +1,29 @@
 import { config, pending } from './lib/config.js?v=arena-token-20260914';
-import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from './lib/wallet.js?v=arena-token-20260914';
+import { BrowserWallet, WalletDiscovery, walletError, formatTokens } from './lib/wallet.js?v=arena-pages-20260914';
 import { scheduleAt, countdown } from './lib/schedule.js';
 
 const $ = selector => document.querySelector(selector);
+const stateNodes = id => document.querySelectorAll('#' + id + ', [data-state="' + id + '"]');
+function stateText(id, value) {
+  for (const node of stateNodes(id)) if (node.textContent !== String(value)) node.textContent = String(value);
+}
 const short = address => address.slice(0, 6) + '…' + address.slice(-4);
 const when = time => new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(time) + ' / ' + new Date(time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' local';
 let busy = '', message = '', snapshot = null, toastTimer;
-let arena = null, settings = {...config,tokenAddress:null,decimals:null}, syncedAt = 0, serverBase = 0, syncError = '', requestId = 0, entryKey = '';
+let arena = null, arenaAddress = null, settings = {...config,tokenAddress:null,decimals:null}, syncedAt = 0, serverBase = 0, syncError = '', requestId = 0, entryKey = '', boundaryRequestKey = '';
+const providerPreferenceKey = 'arena:wallet-provider';
+let providerPreference = null, resumeFinished = false;
+try { providerPreference = localStorage.getItem(providerPreferenceKey); } catch { /* Storage is optional. */ }
 const wallet = new BrowserWallet(() => {
   snapshot = null;
   message = '';
+  arenaAddress = undefined;
   if (arena) arena = {...arena,myCurrentEntry:null,myNextEntry:null};
   renderEntry();
+  renderArena();
   refreshArena();
 });
-const discovery = new WalletDiscovery(window, () => renderWallets());
+const discovery = new WalletDiscovery(window, () => { renderWallets(); tryResume(); });
 
 function text(tag, content, className) {
   const node = document.createElement(tag);
@@ -31,13 +40,28 @@ function button(label, action, className = 'primary') {
 }
 function toast(content) {
   clearTimeout(toastTimer);
-  $('#toast').textContent = content;
-  $('#toast').style.display = 'block';
-  toastTimer = setTimeout(() => { $('#toast').style.display = 'none'; }, 5000);
+  const node = $('#toast');
+  if (!node) return;
+  node.textContent = content;
+  node.style.display = 'block';
+  toastTimer = setTimeout(() => { node.style.display = 'none'; }, 5000);
 }
-function fresh() { return !!arena && !syncError && performance.now() - syncedAt < 45000; }
+function clockFresh() { return !!arena && !syncError && performance.now() - syncedAt < 45000; }
+function matchesSnapshot(schedule) {
+  return !!arena && arena.phase === schedule.phase
+    && (arena.current?.id ?? null) === (schedule.current?.id ?? null)
+    && (arena.next?.id ?? null) === (schedule.next?.id ?? null);
+}
+function fresh() { return clockFresh() && arenaAddress === wallet.address && matchesSnapshot(view()); }
 function serverNow() { return Math.floor(serverBase + performance.now() - syncedAt); }
 function view() { return scheduleAt(arena?.activatedAt ?? null, arena ? serverNow() : 0); }
+function publishState() {
+  // Give page modules a read-only snapshot; they cannot mutate the registration state.
+  window.dispatchEvent(new CustomEvent('arena:state', { detail: {
+    state: arena ? structuredClone(arena) : null, schedule: view(), ready: fresh(),
+    wallet: { address: wallet.address, chainId: wallet.chainId },
+  } }));
+}
 function targetEntry(schedule) {
   return [arena?.myNextEntry,arena?.myCurrentEntry].find(entry => entry?.roundId === schedule.next?.id) ?? null;
 }
@@ -58,11 +82,23 @@ async function refreshArena() {
   try {
     const data = await api('arena' + (address ? '?wallet=' + encodeURIComponent(address) : ''));
     if (id !== requestId || address !== wallet.address) return;
-    if (!Number.isSafeInteger(data.serverNow) || !(data.activatedAt === null || Number.isSafeInteger(data.activatedAt))) throw Error('Invalid arena timing. Please refresh.');
+    const validTime = value => Number.isSafeInteger(value) && value >= 0 && value <= 8640000000000000 - 172800000;
+    if (!validTime(data.serverNow) || !(data.activatedAt === null || validTime(data.activatedAt) && data.activatedAt <= data.serverNow)) throw Error('Invalid arena timing. Please refresh.');
     if (data.token && (!/^0x[0-9a-f]{40}$/i.test(data.token.address) || data.token.chainId !== 4663 || !Number.isInteger(data.token.decimals) || data.token.decimals < 0 || data.token.decimals > 255)) throw Error('Token configuration is unavailable.');
     if (!!data.token !== (data.activatedAt !== null)) throw Error('Arena configuration is unavailable.');
+    const expected = scheduleAt(data.activatedAt, data.serverNow);
+    const sameRound = (actual, target) => target === null ? actual === null : actual?.id === target.id && actual.start === target.start && actual.end === target.end;
+    if (data.phase !== expected.phase || !sameRound(data.current, expected.current) || !sameRound(data.next, expected.next)
+      || (expected.registration === null ? data.registration !== null : ['roundId', 'opensAt', 'closesAt', 'open'].some(key => data.registration?.[key] !== expected.registration[key]))
+      || ![data.participants, data.nextParticipants].every(count => Number.isSafeInteger(count) && count >= 0)) throw Error('Arena round data is inconsistent.');
+    for (const [field, round] of [['myCurrentEntry', expected.current], ['myNextEntry', expected.next]]) {
+      const entry = data[field];
+      if (entry !== null && (!address || !round || entry?.roundId !== round.id || entry.address !== address || !validTime(entry.registeredAt) || entry.registeredAt > data.serverNow)) throw Error('Wallet entry data is inconsistent.');
+    }
+    if (arena && data.serverNow < arena.serverNow) throw Error('Arena updates are out of order.');
     const previousToken = settings.tokenAddress;
     arena = data;
+    arenaAddress = address;
     settings = {...config,tokenAddress:data.token?.address ?? null,decimals:data.token?.decimals ?? null};
     if (previousToken !== settings.tokenAddress) snapshot = null;
     syncedAt = performance.now();
@@ -78,38 +114,67 @@ async function refreshArena() {
 function renderArena() {
   const schedule = view(), ready = fresh(), registration = schedule.registration;
   const first = schedule.phase === 'registration';
-  $('#round-status').textContent = !ready ? (syncError ? '◇ UPDATES UNAVAILABLE' : '◇ CONNECTING') : first ? '● REGISTRATION OPEN' : schedule.current ? '● LIVE ROUND' : '◇ AWAITING LAUNCH';
-  $('#round-status').classList.toggle('awaiting', !ready || schedule.phase === 'prelaunch');
-  $('#launch-badge').textContent = first ? 'Registration open' : schedule.current ? 'Daily rounds' : 'Coming soon';
-  $('#round-label').textContent = first ? 'UPCOMING ROUND' : 'CURRENT ROUND';
-  $('#round-number').textContent = first ? '#001' : schedule.current ? '#' + String(schedule.current.id).padStart(3,'0') : 'Not started';
-  $('#round-dates').textContent = schedule.current ? when(schedule.current.start) : first ? when(schedule.next.start) : 'First round to be announced';
-  $('#timer-label').textContent = first ? 'REGISTRATION CLOSES IN' : schedule.current ? 'ROUND ENDS IN' : 'FIRST ROUND STARTS';
+  const roundKey = [schedule.phase, schedule.current?.id, schedule.next?.id].join(':');
+  if (arena && !matchesSnapshot(schedule) && roundKey !== boundaryRequestKey) {
+    boundaryRequestKey = roundKey;
+    refreshArena();
+  }
   const end = first ? schedule.next.start : schedule.current?.end;
   // The same main timer counts 30 minutes before round 1 and 24 hours during trading.
-  const remaining = ready && end ? countdown(end - serverNow()) : '—';
-  $('#timer').textContent = first && remaining !== '—' ? remaining.slice(3) : remaining;
-  $('#timer-note').textContent = !ready && arena ? 'Synchronizing with the arena' : first ? 'Round #1 starts when this reaches zero' : schedule.current ? '24-hour trading round' : '30-minute first entry window';
-  $('#launch-label').textContent = first ? 'REGISTRATION IS OPEN' : schedule.current ? 'THE ROUND IS LIVE' : 'THE FIRST ROUND';
-  $('#launch-note').textContent = syncError || (first ? 'Hold 10M $ARENA, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $ARENA token is activated, the main timer starts at 30:00 and registration opens. At zero, the first 24-hour round begins.');
-  $('#traders-label').textContent = first ? 'REGISTERED FOR ROUND #1' : 'TRADERS IN THE ARENA';
+  const remaining = clockFresh() && end ? countdown(end - serverNow()) : '—';
   const count = first ? arena?.nextParticipants : arena?.current?.id === schedule.current?.id ? arena?.participants : arena?.next?.id === schedule.current?.id ? arena?.nextParticipants : 0;
-  $('#traders').textContent = ready ? String(count ?? 0) : '—';
-  $('#traders-note').textContent = first ? 'Confirmed registrations' : schedule.current ? 'Return data pending' : 'Registration has not opened';
-  $('#board-status').textContent = schedule.current ? 'Awaiting portfolio data' : first ? 'Registration in progress' : 'Awaiting first round';
-  $('#board-message').textContent = $('#search').value.trim() ? 'No verified results to search yet.' : schedule.current ? 'Trading results are not available yet.' : 'Verified results will appear after trading begins.';
-  $('#next-label').textContent = schedule.next ? (first ? 'FIRST ROUND #1' : 'NEXT ROUND #' + schedule.next.id) : 'FIRST ROUND';
-  $('#next-status').textContent = !ready ? 'Checking registration status' : registration?.open ? 'Registration open' : 'Registration not open';
-  $('#next-start').textContent = schedule.next ? (registration.open ? 'Starts ' : 'Entry opens ' + when(registration.opensAt) + '. Starts ') + when(schedule.next.start) + '.' : 'Starts 30 minutes after the official token is activated.';
+  const values = {
+    'round-status': !ready ? (syncError ? '◇ UPDATES UNAVAILABLE' : '◇ CONNECTING') : first ? '● REGISTRATION OPEN' : schedule.current ? '● LIVE ROUND' : '◇ AWAITING LAUNCH',
+    'launch-badge': !ready ? (syncError ? 'Updates unavailable' : 'Connecting') : first ? 'Registration open' : schedule.current ? 'Daily rounds' : 'Coming soon',
+    'round-label': first ? 'UPCOMING ROUND' : 'CURRENT ROUND',
+    'round-number': first ? '#001' : schedule.current ? '#' + String(schedule.current.id).padStart(3,'0') : 'Not started',
+    'round-dates': schedule.current ? when(schedule.current.start) : first ? when(schedule.next.start) : 'First round to be announced',
+    'timer-label': first ? 'REGISTRATION CLOSES IN' : schedule.current ? 'ROUND ENDS IN' : 'FIRST ROUND STARTS',
+    'timer': first && remaining !== '—' ? remaining.slice(3) : remaining,
+    'timer-note': !ready && arena ? 'Synchronizing with the arena' : first ? 'Round #1 starts when this reaches zero' : schedule.current ? '24-hour trading round' : '30-minute first entry window',
+    'launch-label': first ? 'REGISTRATION IS OPEN' : schedule.current ? 'THE ROUND IS LIVE' : 'THE FIRST ROUND',
+    'launch-note': syncError || (first ? 'Hold 10M $ARENA, check your balance and register before the main timer reaches zero. Everyone starts together.' : schedule.current ? 'Registration for this round is closed. The next round opens for entries in the final hour. Portfolio results are not connected yet.' : 'When the official $ARENA token is activated, the main timer starts at 30:00 and registration opens. At zero, the first 24-hour round begins.'),
+    'traders-label': first ? 'REGISTERED FOR ROUND #1' : 'TRADERS IN THE ARENA',
+    'traders': ready ? String(count ?? 0) : '—',
+    'traders-note': first ? 'Confirmed registrations' : schedule.current ? 'Return data pending' : 'Registration has not opened',
+    'pool': '—',
+    'board-status': !ready ? 'Waiting for arena updates' : schedule.current ? 'Awaiting portfolio data' : first ? 'Registration in progress' : 'Awaiting first round',
+    'board-message': $('#search')?.value.trim() ? 'No verified results to search yet.' : schedule.current ? 'Trading results are not available yet.' : 'Verified results will appear after trading begins.',
+    'next-label': schedule.next ? (first ? 'FIRST ROUND #1' : 'NEXT ROUND #' + schedule.next.id) : 'FIRST ROUND',
+    'next-number': schedule.next ? '#' + String(schedule.next.id).padStart(3, '0') : 'Not started',
+    'next-status': !ready ? 'Checking registration status' : registration?.open ? 'Registration open' : 'Registration not open',
+    'next-start': schedule.next ? (registration.open ? 'Starts ' : 'Entry opens ' + when(registration.opensAt) + '. Starts ') + when(schedule.next.start) + '.' : 'Starts 30 minutes after the official token is activated.',
+  };
+  for (const [id, value] of Object.entries(values)) stateText(id, value);
+  for (const node of stateNodes('round-status')) node.classList.toggle('awaiting', !ready || schedule.phase === 'prelaunch');
+  renderParticipation(schedule);
   const key = [schedule.phase,schedule.current?.id,schedule.next?.id,registration?.open,ready].join(':');
   if (key !== entryKey) { entryKey = key; renderEntry(); }
+  publishState();
+}
+function renderParticipation(schedule = view()) {
+  const ready = fresh(), connected = !!wallet.address;
+  const currentEntry = [arena?.myCurrentEntry,arena?.myNextEntry].find(entry => entry?.roundId === schedule.current?.id);
+  const nextEntry = targetEntry(schedule);
+  const unavailable = !connected ? 'Connect your wallet to view your entries.' : !ready ? 'Checking your saved entries…' : null;
+  stateText('wallet-status', connected ? 'Wallet connected' : 'Wallet not connected');
+  stateText('wallet-address', wallet.address || 'Not connected');
+  stateText('wallet-network', !connected ? 'Choose a wallet to continue' : wallet.chainId === settings.network.chainId ? 'Robinhood Chain' : 'Switch to Robinhood Chain');
+  stateText('my-current-entry', unavailable || (currentEntry ? 'Participating in round #' + currentEntry.roundId : schedule.current ? 'Not registered for round #' + schedule.current.id : 'No trading round has started yet.'));
+  stateText('my-next-entry', unavailable || (nextEntry ? 'Registered for round #' + nextEntry.roundId : schedule.next ? 'Not registered for round #' + schedule.next.id : 'The first round has not opened.'));
+  stateText('my-participation', unavailable || (currentEntry ? 'You are participating in round #' + currentEntry.roundId + (nextEntry ? ' and registered for round #' + nextEntry.roundId + '.' : '.') : nextEntry ? 'Your entry for round #' + nextEntry.roundId + ' is saved.' : 'No confirmed entry for the current or next round.'));
 }
 function renderEntry() {
   const schedule = view(), registered = targetEntry(schedule);
-  $('#connect').textContent = wallet.address ? short(wallet.address) + ' · Disconnect' : 'Connect wallet ↗';
-  $('#connect').disabled = !!busy;
-  $('#entry-title').innerHTML = registered ? 'You’re on<br>the list.' : wallet.address ? 'Your next<br>round.' : 'Your place is<br>waiting.';
+  const connect = $('#connect');
+  if (connect) {
+    connect.textContent = busy === 'resume' ? 'Restoring wallet…' : wallet.address ? short(wallet.address) + ' · Disconnect' : 'Connect wallet ↗';
+    connect.disabled = !!busy;
+  }
+  for (const node of stateNodes('entry-title')) node.innerHTML = registered ? 'You’re on<br>the list.' : wallet.address ? 'Your next<br>round.' : 'Your place is<br>waiting.';
+  renderParticipation(schedule);
   const panel = $('#entry-content');
+  if (!panel) return;
   panel.replaceChildren();
   if (!wallet.address) {
     panel.append(text('p', settings.tokenAddress ? 'Connect your wallet, check your 10M $ARENA balance and register during the entry period.' : 'Connect your wallet to get ready. The official $ARENA token has not been activated yet.'));
@@ -161,23 +226,52 @@ function renderEntry() {
   }
 }
 function renderWallets() {
-  const list = $('#wallet-list'); list.replaceChildren();
+  const list = $('#wallet-list');
+  if (!list) return;
+  list.replaceChildren();
   if (!discovery.items.length) {
     list.append(text('p','No browser wallet detected. Open this site in a browser with an EVM wallet extension, or use your wallet’s built-in browser.'));
     list.append(button('Look for wallets again ↻', () => discovery.request(), 'outline'));
   } else for (const item of discovery.items) list.append(button(busy === 'connect' ? 'Check your wallet…' : item.name, () => connect(item.provider), 'outline wallet-option'));
 }
+function rememberProvider(provider) {
+  const item = discovery.items.find(item => item.provider === provider);
+  providerPreference = item?.rdns ? 'rdns:' + item.rdns : provider === window.ethereum ? 'injected' : null;
+  try {
+    if (providerPreference) localStorage.setItem(providerPreferenceKey, providerPreference);
+    else localStorage.removeItem(providerPreferenceKey);
+  } catch { /* Provider selection is a convenience, never an authorization. */ }
+}
+function forgetProvider() {
+  providerPreference = null;
+  resumeFinished = true;
+  try { localStorage.removeItem(providerPreferenceKey); } catch { /* Storage is optional. */ }
+}
+async function tryResume() {
+  if (!providerPreference || resumeFinished || busy || wallet.address) return;
+  const matches = discovery.items.filter(item => providerPreference === 'injected'
+    ? item.provider === window.ethereum : item.rdns && providerPreference === 'rdns:' + item.rdns);
+  // Do not guess between providers advertising the same identity.
+  if (matches.length !== 1) return;
+  resumeFinished = true;
+  busy = 'resume'; renderEntry(); renderWallets();
+  try {
+    if (!await wallet.resume(matches[0].provider)) forgetProvider();
+  } catch { /* A locked/unavailable wallet stays disconnected until the user connects. */ }
+  finally { busy = ''; await refreshArena(); renderEntry(); renderWallets(); }
+}
 function openWallets() {
   if (busy) return;
-  $('#wallet-error').textContent = '';
-  $('#wallet-dialog').showModal(); discovery.request();
+  stateText('wallet-error', '');
+  $('#wallet-dialog')?.showModal(); discovery.request();
 }
 async function connect(provider) {
   if (busy) return;
-  busy = 'connect'; $('#wallet-error').textContent = ''; renderWallets(); renderEntry();
+  resumeFinished = true;
+  busy = 'connect'; stateText('wallet-error', ''); renderWallets(); renderEntry();
   try {
-    await wallet.connect(provider); $('#wallet-dialog').close(); await refreshArena(); toast('Wallet connected.');
-  } catch (error) { $('#wallet-error').textContent = walletError(error); }
+    await wallet.connect(provider); rememberProvider(provider); $('#wallet-dialog')?.close(); await refreshArena(); toast('Wallet connected.');
+  } catch (error) { stateText('wallet-error', walletError(error)); }
   finally { busy = ''; renderWallets(); renderEntry(); }
 }
 async function switchNetwork() {
@@ -217,13 +311,23 @@ const faq = {
   'Can I enter the next round while the current one is live?': 'Yes, in its final hour. Current trading continues. Registration does not automatically carry over.',
   'How will trading return be measured?': 'The eligible portfolio, including open positions, must be valued in ETH, excluding external deposits and withdrawals. Portfolio ingestion, detailed valuation rules and payouts are still being prepared.',
 };
-for (const [question,answer] of Object.entries(faq)) {
-  const item = document.createElement('details'); item.append(text('summary',question),text('p',answer)); $('#faq').append(item);
+const faqList = $('#faq');
+if (faqList && ![...faqList.children].some(node => node.tagName.toLowerCase() === 'details')) {
+  faqList.replaceChildren();
+  for (const [question,answer] of Object.entries(faq)) {
+    const item = document.createElement('details'); item.append(text('summary',question),text('p',answer)); faqList.append(item);
+  }
 }
-$('#pending-rules').textContent = pending.join(' · ') + '. These terms still require confirmation.';
-$('#search').addEventListener('input', renderArena);
-$('#connect').addEventListener('click', () => { if (wallet.address) { wallet.disconnect(); toast('Disconnected from this page.'); } else openWallets(); });
-$('#close-dialog').addEventListener('click', () => $('#wallet-dialog').close());
+stateText('pending-rules', pending.join(' · ') + '. These terms still require confirmation.');
+$('#search')?.addEventListener('input', renderArena);
+$('#connect')?.addEventListener('click', () => {
+  if (busy) return;
+  if (wallet.address) { forgetProvider(); wallet.disconnect(); toast('Wallet disconnected.'); }
+  else openWallets();
+});
+for (const node of document.querySelectorAll('[data-connect-wallet]')) node.addEventListener('click', event => { event.preventDefault(); openWallets(); });
+$('#close-dialog')?.addEventListener('click', () => $('#wallet-dialog')?.close());
+window.addEventListener('arena:state-request', publishState);
 window.addEventListener('focus', () => {
   if (wallet.provider && !busy) wallet.refresh().catch(() => wallet.disconnect());
   refreshArena();
@@ -232,9 +336,15 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) snapshot = null;
   else { refreshArena(); renderEntry(); }
 });
+window.addEventListener('pageshow', event => {
+  if (!event.persisted) return;
+  snapshot = null;
+  if (wallet.provider && !busy) wallet.refresh().catch(() => wallet.disconnect());
+  refreshArena();
+});
 setInterval(() => {
   if (snapshot && Date.now() - snapshot.checkedAt > 60000) { snapshot = null; renderEntry(); }
   renderArena();
 },1000);
 setInterval(() => { if (!document.hidden) refreshArena(); },15000);
-renderEntry(); refreshArena();
+renderEntry(); renderArena(); refreshArena(); discovery.request();

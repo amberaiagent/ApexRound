@@ -16,8 +16,18 @@ const server = http.createServer((req,res) => {
   let pathname;
   try { pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname); }
   catch { res.writeHead(400); res.end(); return; }
-  const file = path.resolve(root,'.' + (pathname === '/' ? '/index.html' : pathname));
+  if (pathname.includes('\0')) { res.writeHead(400); res.end(); return; }
+  let file = path.resolve(root,'.' + (pathname === '/' ? '/index.html' : pathname));
   if (!file.startsWith(root + path.sep)) { res.writeHead(403); res.end(); return; }
+  try {
+    if (fs.statSync(file).isDirectory()) {
+      if (!pathname.endsWith('/')) {
+        const target = new URL(req.url, 'http://localhost');
+        res.writeHead(301, {Location:target.pathname + '/' + target.search}); res.end(); return;
+      }
+      file = path.join(file, 'index.html');
+    }
+  } catch { /* readFile below supplies the normal 404. */ }
   fs.readFile(file,(error,data) => {
     res.writeHead(error ? 404 : 200, {'Content-Type':({'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml'})[path.extname(file)] || 'application/octet-stream','Cache-Control':'no-store'});
     res.end(error ? 'Not found' : data);

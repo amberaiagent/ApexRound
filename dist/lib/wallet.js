@@ -33,17 +33,19 @@ export class WalletDiscovery {
     target.addEventListener('eip6963:announceProvider', event => {
       const { info, provider } = event.detail ?? {};
       if (provider && typeof provider.request === 'function' && typeof info?.name === 'string') {
-        this.add(provider, info.name.slice(0, 64));
+        const rdns = typeof info.rdns === 'string' && /^[a-z0-9]+(?:[.-][a-z0-9]+)+$/i.test(info.rdns) && info.rdns.length <= 128 ? info.rdns.toLowerCase() : null;
+        this.add(provider, info.name.slice(0, 64), rdns);
       }
     });
   }
 
-  add(provider, name) {
+  add(provider, name, rdns = null) {
     const existing = this.items.find(item => item.provider === provider);
     if (existing) {
       if (existing.name === 'Browser wallet') existing.name = name;
+      if (rdns) existing.rdns = rdns;
     } else {
-      this.items.push({ provider, name });
+      this.items.push({ provider, name, rdns });
     }
     this.onChange(this.items);
   }
@@ -85,6 +87,15 @@ export class BrowserWallet {
   }
 
   async connect(provider) {
+    return this.establish(provider, true);
+  }
+
+  // Resume only access already granted to this origin. Never prompts for accounts.
+  async resume(provider) {
+    return this.establish(provider, false);
+  }
+
+  async establish(provider, requestPermission) {
     this.disconnect();
     const connection = this.connection;
     this.provider = provider;
@@ -106,10 +117,14 @@ export class BrowserWallet {
       }
     }
     try {
-      await requestWithTimeout(provider, { method: 'eth_requestAccounts' }, 90000);
+      if (requestPermission) await requestWithTimeout(provider, { method: 'eth_requestAccounts' }, 90000);
       if (this.connection !== connection) throw new Error('Wallet connection changed. Try again.');
       await this.refresh(connection);
-      if (!this.address) throw new Error('No account selected. Unlock your wallet and try again.');
+      if (!this.address) {
+        if (requestPermission) throw new Error('No account selected. Unlock your wallet and try again.');
+        this.disconnect();
+        return null;
+      }
       return this.address;
     } catch (error) {
       if (this.connection === connection) this.disconnect();

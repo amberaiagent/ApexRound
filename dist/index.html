@@ -4,32 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f4f4f4">
-  <meta name="description" content="ARENA is the daily trading competition on Robinhood Chain. Your wallet. Your edge. 24 hours to earn your place.">
+  <meta name="description" content="The daily trading competition on Robinhood Chain. Explore the arena, follow each round and find your place.">
   <title>ARENA — Your edge. Your arena.</title>
-  <link rel="icon" type="image/png" href="assets/arena-logo.png">
-  <link rel="stylesheet" href="style.css?v=arena-token-20260914">
-  <link rel="stylesheet" href="motion.css?v=arena-motion-20260914">
-  <link rel="stylesheet" href="interactions.css?v=arena-motion-20260914">
+  <link rel="canonical" href="https://apex-round.com/">
+  <link rel="icon" type="image/png" href="/assets/arena-logo.png">
+  <link rel="stylesheet" href="/style.css?v=arena-pages-20260914">
+  <link rel="stylesheet" href="/motion.css?v=arena-pages-20260914">
+  <link rel="stylesheet" href="/interactions.css?v=arena-pages-20260914">
+  <link rel="stylesheet" href="/pages.css?v=arena-pages-20260914">
 </head>
-<body>
-<a class="skip-link" href="#arena">Skip to the arena</a>
-<header>
-  <a class="brand" href="#" aria-label="ARENA home"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000"></span><span>ARENA</span></a>
-  <nav aria-label="Main navigation"><a href="#arena">The arena</a><a href="#how">How it works</a><a href="#history">Past rounds</a></nav>
-  <button id="connect" class="outline">Connect wallet ↗</button>
+<body data-page="home">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="brand" href="/" aria-label="ARENA home"><span class="logo-mark"><img src="/assets/arena-logo.png" alt="" width="2000" height="2000"></span><span>ARENA</span></a>
+  <nav id="main-nav" aria-label="Main navigation"><a href="/arena/">The arena</a><a href="/rounds/">Rounds</a><a href="/guide/">How to play</a><a href="/token/">$ARENA</a><a href="/rules/">Rules</a><a class="mobile-account" href="/my-arena/">My arena</a></nav>
+  <div class="header-actions"><a class="account-link" href="/my-arena/">My arena</a><button id="connect" class="outline" type="button">Connect wallet</button><button id="menu-toggle" class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open navigation"><span></span><span></span></button></div>
 </header>
-<main>
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="hero-copy">
-      <div class="eyebrow"><span class="status-dot"></span> THE DAILY TRADING COMPETITION</div>
-      <h1 id="hero-title">Your edge.<br><span>Your arena.</span></h1>
-      <p>A level playing field. An open opportunity.<br>24 hours to turn your trading into a place at the top.</p>
-      <a class="primary" href="#arena">Enter the arena <span aria-hidden="true">↗</span></a>
-      <div class="hero-bottom"><span class="chain"><span class="chain-dot"></span> Built on Robinhood Chain</span><span id="launch-badge" class="launch-badge">Coming soon</span></div>
-    </div>
-    <div class="hero-art">
-      <div class="art-top"><span>THE EDGE IS YOURS.</span><button id="motion-toggle" class="motion-toggle" type="button" aria-label="Pause animations" hidden><span class="motion-symbol" aria-hidden="true"></span><span class="motion-label">Motion on</span></button></div>
-      <svg class="arena-sculpture" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="640" height="600" viewBox="0 0 640 600" fill="none">
+<main id="main" tabindex="-1"><section class="hero" aria-labelledby="hero-title">
+  <div class="hero-copy"><div class="eyebrow"><span class="status-dot"></span> THE DAILY TRADING COMPETITION</div><h1 id="hero-title">Your edge.<br><span>Your arena.</span></h1><p>A new round. A level playing field.<br>24 hours to turn your trading into a place at the top.</p><div class="button-row"><a class="primary" href="/arena/">Explore the arena <span aria-hidden="true">↗</span></a><a class="text-link" href="/guide/">Learn the game</a></div><div class="hero-bottom"><span class="chain"><span class="chain-dot"></span> Robinhood Chain</span><span data-state="launch-badge" class="launch-badge">Connecting to the arena</span></div></div>
+  <div class="hero-art"><div class="art-top"><span>THE EDGE IS YOURS.</span><span>01—24</span></div><svg class="arena-sculpture" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="640" height="600" viewBox="0 0 640 600" fill="none">
   <defs>
     <linearGradient id="surface" x1="116" y1="115" x2="451" y2="498" gradientUnits="userSpaceOnUse">
       <stop stop-color="#f4f4f4"/>
@@ -77,68 +70,31 @@
     <ellipse cx="320" cy="205" rx="97" ry="38" stroke="#7d6db3" stroke-opacity=".45"/>
     </g>
   </g></g>
-</svg>
-      <div class="art-bottom"><span>Everyone starts together.<br>Where you finish is up to you.</span></div>
-    </div>
-  </section>
-  <div class="principles" aria-label="Competition principles">
-    <div><span class="mini-index">01</span><p>Your wallet.<br><strong>Your control.</strong></p></div>
-    <div><span class="mini-index">02</span><p>One starting line.<br><strong>24 hours to compete.</strong></p></div>
-    <div><span class="mini-index">03</span><p>Performance first.<br><strong>Equal shares for winners.</strong></p></div>
-  </div>
-  <section id="arena" class="arena">
-    <div class="section-heading"><div><div class="eyebrow">01 / THE ARENA</div><h2>One round.<br>Every opportunity.</h2></div><div class="heading-side"><span class="live-pill awaiting" id="round-status">◇ AWAITING LAUNCH</span><p>A fresh start every 24 hours.<br>Make your next move count.</p></div></div>
-    <div class="launch-note"><span id="launch-label">THE FIRST ROUND</span><p id="launch-note">When the official $ARENA token is activated, registration opens for 30 minutes. Then the first 24-hour round begins.</p></div>
-    <div class="round-bar">
-      <div><span id="round-label" class="label">CURRENT ROUND</span><strong id="round-number">Not started</strong><span id="round-dates" class="muted">First round to be announced</span></div>
-      <div class="timer-tile"><span id="timer-label" class="label">FIRST ROUND STARTS</span><strong id="timer" class="timer">—</strong><span id="timer-note" class="muted">30-minute first entry window</span></div>
-      <div><span class="label">ROUND FEE POOL</span><strong id="pool">—</strong><span class="muted">Announced with the round</span></div>
-      <div><span id="traders-label" class="label">TRADERS IN THE ARENA</span><strong id="traders">0</strong><span id="traders-note" class="muted">Registration has not opened</span></div>
-    </div>
-    <div class="arena-body">
-      <div class="leaderboard">
-        <div class="table-heading"><h3>The leaderboard</h3><label class="search"><span aria-hidden="true">⌕</span><input id="search" placeholder="Search wallet" aria-label="Search wallet address"></label></div>
-        <div class="table-note"><span>Trading return, measured in ETH.</span><span id="board-status">Awaiting first round</span></div>
-        <div id="table" class="prelaunch-board"><div class="empty"><div class="empty-emblem" aria-hidden="true"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000" loading="lazy"></span></div><span class="eyebrow">THE NEXT NAME COULD BE YOURS</span><h3>A place at the top.</h3><p id="board-message" aria-live="polite">Verified results will appear here.</p></div></div>
-      </div>
-      <aside aria-labelledby="entry-title">
-        <div class="entry-top"><span class="eyebrow">YOUR NEXT MOVE</span></div>
-        <h3 id="entry-title">Your place is<br>waiting.</h3>
-        <div id="entry-content"><p>Wallet connection requires JavaScript.</p></div>
-        <div class="next-round"><div><span id="next-label">FIRST ROUND</span><b id="next-status">Registration not open</b></div><p id="next-start">Starts 30 minutes after the official token is activated.</p></div>
-        <div class="entry-rule"><p>10,000,000 $ARENA required.<br>Your wallet. No $ARENA locked.</p></div>
-      </aside>
-    </div>
-  </section>
-  <section id="how" class="how">
-    <div class="section-heading"><div><div class="eyebrow">02 / HOW IT WORKS</div><h2>Simple rules.<br>Real ambition.</h2></div><p class="section-intro">Every trader starts together. Every qualifying place gets the same share. Your performance makes the difference.</p></div>
-    <div class="steps">
-      <article><div class="step-top"><span>01 / QUALIFY</span></div><div class="step-figure"><strong>10M</strong><span>$ARENA</span></div><h3>Hold your entry.</h3><p>Connect your wallet and check your $ARENA balance. Checking eligibility and registering are separate steps.</p></article>
-      <article><div class="step-top"><span>02 / COMPETE</span></div><div class="step-figure"><strong>24</strong><span>HOURS</span></div><h3>Make your moves.</h3><p>Register before the round starts. Trade on your own wallet. For later rounds, entry opens in the current round’s final hour.</p></article>
-      <article class="accent-step"><div class="step-top"><span>03 / EARN YOUR PLACE</span></div><div class="step-figure"><strong>+50<span>%</span></strong><span>GO BEYOND</span></div><h3>Rise. Rank. Share.</h3><p>Finish strictly above +50% in ETH trading return and reach the top 10. With ten winners, each receives an equal 10% share.</p></article>
-    </div>
-    <div class="faq-layout"><div><div class="eyebrow">A LITTLE MORE CLARITY</div><h3>Good questions.<br>Clear answers.</h3></div><div id="faq" class="faq"></div></div>
-  </section>
-  <section id="history" class="history">
-    <div class="section-heading"><div><div class="eyebrow">03 / THE TRACK RECORD</div><h2>Every round<br>has a story.</h2></div></div>
-    <div id="history-list" class="empty history-empty"><span class="history-index" aria-hidden="true">[ — ]</span><div><h3>History in the making.</h3><p>Completed rounds, verified results and payout status will appear here.</p></div><a class="text-link" href="#arena">Back to the arena <span aria-hidden="true">↗</span></a></div>
-  </section>
-  <section class="pending"><span class="eyebrow">THE DETAILS MATTER</span><div><h3>Competition terms in progress.</h3><p id="pending-rules"></p><p>100% of $ARENA fees designated for this program are intended for its round pool. The exact fee source is pending confirmation.</p></div></section>
-  <section class="closing"><div class="eyebrow">ONE STARTING LINE. ENDLESS POSSIBILITY.</div><h2>See you in<br>the arena.</h2><a class="primary" href="#arena">Find your place <span aria-hidden="true">↗</span></a><div class="closing-mark" aria-hidden="true"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000" loading="lazy"></span></div></section>
+</svg><div class="art-bottom"><span>Everyone starts together.<br>Where you finish is up to you.</span><span class="art-coordinate">[ ARENA / 001 ]</span></div></div>
+</section>
+<section class="home-live" aria-label="Current round"><div><span class="eyebrow">INSIDE THE ARENA</span><strong data-state="round-number">—</strong></div><div><span class="label" data-state="timer-label">ROUND COUNTDOWN</span><strong class="timer" data-state="timer">—</strong></div><div><span class="label">CONFIRMED ENTRIES</span><strong data-state="traders">—</strong></div><a class="round-link" href="/arena/">Open live arena <span aria-hidden="true">↗</span></a></section>
+<section class="editorial-intro"><span class="eyebrow">ONE STARTING LINE.</span><div><h2>Good trading deserves<br><span>a place to compete.</span></h2><p>ARENA brings a daily rhythm to onchain trading. Hold your access, register for a round and compete from your own wallet. Every new round is a fresh opportunity.</p></div></section>
+<section class="path-grid" aria-label="Explore ARENA">
+  <a class="path-card path-purple" href="/arena/"><span class="eyebrow">01 / COMPETE</span><div class="dial-art" aria-hidden="true"><span>24<small>HOURS</small></span></div><div><h3>The clock is running.</h3><p>A shared start. A full day to make your moves.</p><span class="card-link">Enter the arena ↗</span></div></a>
+  <a class="path-card path-outline" href="/rounds/"><span class="eyebrow">02 / FOLLOW</span><div class="round-stack" aria-hidden="true"><span>ROUND / 001</span><span>ROUND / 002</span><span>ROUND / 003</span></div><div><h3>Every round, in view.</h3><p>Find the schedule, registration window and status.</p><span class="card-link">Browse rounds ↗</span></div></a>
+  <a class="path-card path-soft" href="/guide/"><span class="eyebrow">03 / GET STARTED</span><div class="step-art" aria-hidden="true"><i></i><i></i><i></i><span>YOUR NEXT STEP</span></div><div><h3>Know your next move.</h3><p>From connecting your wallet to your first entry.</p><span class="card-link">How to play ↗</span></div></a>
+</section>
+<section class="access-banner"><div><span class="eyebrow">THE KEY TO YOUR ARENA</span><h2>Hold $ARENA.<br>Find your place.</h2></div><div><p>10 million tokens unlock eligibility. Connecting, checking your balance and entering a round are separate steps. Your tokens stay with you.</p><a class="outline" href="/token/">Explore $ARENA access</a></div></section>
 </main>
-<footer><a class="brand" href="#" aria-label="ARENA home"><span class="logo-mark"><img src="assets/arena-logo.png" alt="" width="2000" height="2000" loading="lazy"></span><span>ARENA</span></a><p>Your edge. Your arena.</p><span>Independent project.<br>Not affiliated with Robinhood.</span><a href="#" class="back-top" aria-label="Back to top">↑</a></footer>
+<footer class="site-footer">
+  <div class="footer-top"><div><a class="brand" href="/" aria-label="ARENA home"><span class="logo-mark"><img src="/assets/arena-logo.png" alt="" width="2000" height="2000" loading="lazy"></span><span>ARENA</span></a><p>Your edge. Your arena.</p></div><div class="footer-links"><div><span class="eyebrow">COMPETE</span><a href="/arena/">The arena</a><a href="/rounds/">Round directory</a><a href="/my-arena/">My arena</a></div><div><span class="eyebrow">GET TO KNOW US</span><a href="/guide/">How to play</a><a href="/token/">$ARENA access</a><a href="/rules/">The rulebook</a></div></div></div>
+  <div class="footer-bottom"><span>Independent project. Not affiliated with Robinhood.</span><span>Built on Robinhood Chain</span><button id="motion-toggle" class="motion-toggle" type="button" aria-label="Pause animations" hidden><span class="motion-symbol" aria-hidden="true"></span><span class="motion-label">Motion on</span></button><a href="#main" class="back-top" aria-label="Back to top">↑</a></div>
+</footer>
 <dialog id="wallet-dialog" aria-labelledby="wallet-title">
-  <button id="close-dialog" aria-label="Close" class="close">×</button>
-  <span class="eyebrow">ARENA / YOUR WALLET</span>
-  <h2 id="wallet-title">Make your<br>next move.</h2>
+  <button id="close-dialog" aria-label="Close" class="close" type="button">×</button>
+  <span class="eyebrow">ARENA / YOUR WALLET</span><h2 id="wallet-title">Make your<br>next move.</h2>
   <p>Choose your browser wallet. Connecting shares your public address; it does not enter a round.</p>
-  <div id="wallet-list"></div>
-  <p id="wallet-error" class="outside" role="alert"></p>
-  <p class="muted">No signature, approval or payment is requested to connect or read a balance.</p>
-  <p class="muted">Joining a round asks you to sign a message naming that round. The server checks your balance before confirming entry.</p>
+  <div id="wallet-list"></div><p id="wallet-error" class="outside" role="alert"></p>
+  <p class="muted">No signature, approval or payment is requested to connect or read a balance.</p><p class="muted">Joining a round asks you to sign a message naming that round. Your balance is checked before entry is confirmed.</p>
 </dialog>
 <div id="toast" role="status"></div>
-<script type="module" src="app.js?v=arena-token-20260914"></script>
-<script type="module" src="motion.js?v=arena-motion-20260914"></script>
+<script type="module" src="/app.js?v=arena-pages-20260914"></script>
+<script type="module" src="/site.js?v=arena-pages-20260914"></script>
+<script type="module" src="/motion.js?v=arena-pages-20260914"></script>
 </body>
 </html>

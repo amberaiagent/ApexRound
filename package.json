@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-sqlite --test tests/arena.test.js tests/wallet.test.js tests/token-configuration.test.js tests/registration.test.js",
+    "build": "node scripts/build-site.mjs",
+    "test": "node --experimental-sqlite --test tests/*.test.js",
     "start": "node --experimental-sqlite server.js"
   },
   "dependencies": {

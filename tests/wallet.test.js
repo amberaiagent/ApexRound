@@ -58,6 +58,52 @@ test('Rejected connection does not install a simulated account', async () => {
   assert.match(walletError({ code: 4001 }), /cancelled/);
 });
 
+test('Silent page navigation resumes only previously authorized accounts without permission requests', async () => {
+  const provider = new Provider(), wallet = new BrowserWallet();
+  assert.equal(await wallet.resume(provider), address);
+  assert.deepEqual(provider.calls.map(call => call.method), ['eth_accounts', 'eth_chainId']);
+  provider.emit('accountsChanged', [other]);
+  assert.equal(wallet.address, other);
+  wallet.disconnect();
+  assert.equal(provider.listenerCount('accountsChanged'), 0);
+});
+
+test('Silent resume of a locked or revoked wallet cannot request permissions or retain a connection', async () => {
+  for (const revoked of [false, true]) {
+    const provider = new Provider(), wallet = new BrowserWallet();
+    provider.accounts = [];
+    const original = provider.request.bind(provider);
+    provider.request = args => {
+      if (revoked && args.method === 'eth_accounts') {
+        provider.calls.push(args);
+        throw Object.assign(Error('Authorization revoked'), { code: 4100 });
+      }
+      return original(args);
+    };
+    if (revoked) await assert.rejects(wallet.resume(provider), /revoked/);
+    else assert.equal(await wallet.resume(provider), null);
+    assert.equal(wallet.address, null);
+    assert.equal(wallet.provider, null);
+    assert.equal(wallet.chainId, null);
+    assert.equal(provider.listenerCount('accountsChanged'), 0);
+    assert.ok(provider.calls.every(call => ['eth_accounts', 'eth_chainId'].includes(call.method)));
+  }
+});
+
+test('Disconnect invalidates a late silent-resume response', async () => {
+  const provider = new Provider(), wallet = new BrowserWallet();
+  const original = provider.request.bind(provider);
+  let release;
+  provider.request = args => args.method === 'eth_accounts' ? new Promise(resolve => { release = resolve; }) : original(args);
+  const pending = wallet.resume(provider);
+  await new Promise(resolve => setImmediate(resolve));
+  wallet.disconnect();
+  release([address]);
+  await assert.rejects(pending, /connection changed/);
+  assert.equal(wallet.address, null);
+  assert.equal(wallet.provider, null);
+});
+
 test('Missing token configuration cannot grant eligibility or issue token RPC reads', async () => {
   const provider = new Provider(), wallet = new BrowserWallet();
   await wallet.connect(provider);
@@ -163,13 +209,30 @@ test('Wallet discovery handles late announcements and deduplicates injected prov
   assert.equal(discovery.items[0].name, 'Example wallet');
 });
 
+test('Discovery stores a bounded provider identity without storing wallet accounts', () => {
+  const target = new EventTarget(), provider = new Provider();
+  target.ethereum = provider;
+  const discovery = new WalletDiscovery(target);
+  discovery.request();
+  target.dispatchEvent(new CustomEvent('eip6963:announceProvider', { detail: {
+    provider, info: { name: 'Example wallet', rdns: 'Com.Example.Wallet' },
+  } }));
+  assert.equal(discovery.items.length, 1);
+  assert.equal(discovery.items[0].rdns, 'com.example.wallet');
+  assert.equal(Object.hasOwn(discovery.items[0], 'address'), false);
+  target.dispatchEvent(new CustomEvent('eip6963:announceProvider', { detail: {
+    provider: new Provider(), info: { name: 'Other wallet', rdns: '<script>invalid</script>' },
+  } }));
+  assert.equal(discovery.items[1].rdns, null);
+});
+
 test('Public release has no simulation or fabricated round, pool, or registration', async () => {
   const html = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
   const app = await readFile(new URL('../dist/app.js', import.meta.url), 'utf8');
   assert.equal(config.demo, false);
   assert.doesNotMatch(html + app, /DemoWallet|demo-connect|setScenario|set_demo_scenario|#042|12\.80|Demo data|Demo results/);
-  assert.match(html, /Registration not open/);
-  assert.match(html, /AWAITING LAUNCH/);
+  assert.match(app, /Registration not open/);
+  assert.match(app, /AWAITING LAUNCH/);
   assert.doesNotMatch(app, /\.register\(|personal_sign|eth_sendTransaction/);
 });
 

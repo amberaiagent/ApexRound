@@ -13,11 +13,11 @@ const paused = () => manualPause || reduced.matches;
 
 function resetTilt() {
   cancelAnimationFrame(pointerFrame); pointerFrame = 0;
-  for (const name of ['--tilt-x', '--tilt-y', '--drift-x', '--drift-y']) sculpture.style.removeProperty(name);
+  for (const name of ['--tilt-x', '--tilt-y', '--drift-x', '--drift-y']) sculpture?.style.removeProperty(name);
 }
 function updateMotion() {
   root.classList.toggle('motion-paused', paused());
-  art.classList.toggle('motion-running', !paused() && artVisible && !document.hidden);
+  art?.classList.toggle('motion-running', !paused() && artVisible && !document.hidden);
   toggle.hidden = false;
   toggle.disabled = reduced.matches;
   toggle.setAttribute('aria-label', reduced.matches ? 'Animations off: reduced motion preference' : manualPause ? 'Resume animations' : 'Pause animations');
@@ -54,14 +54,14 @@ if ('IntersectionObserver' in window) {
     artVisible = entries[0].isIntersecting;
     updateMotion();
   }, { threshold: 0 });
-  artObserver.observe(art);
+  if (art) artObserver.observe(art);
   const revealObserver = new IntersectionObserver(entries => {
     for (const entry of entries) if (entry.isIntersecting) {
       enter(entry.target, Number(entry.target.dataset.motionDelay || 0));
       revealObserver.unobserve(entry.target);
     }
   }, { threshold: .12 });
-  const targets = document.querySelectorAll('.principles > div, .section-heading, .steps article, .faq-layout, .history-empty, .closing > .eyebrow, .closing > h2, .closing > .primary');
+  const targets = document.querySelectorAll('.page-heading, .editorial-intro, .section-heading, .path-card, .access-banner, .guide-chapter, .rule-section, .faq-layout, .contract-panel, .simple-steps article');
   for (const element of targets) {
     if (element.matches('.steps article, .principles > div')) element.dataset.motionDelay = String([...element.parentElement.children].indexOf(element) * 85);
     revealObserver.observe(element);
@@ -74,8 +74,8 @@ if (!location.hash || location.hash === '#') {
   document.querySelectorAll('.hero-copy > *').forEach((element, index) => enter(element, index * 80));
 }
 
-art.addEventListener('pointerenter', () => { bounds = art.getBoundingClientRect(); });
-art.addEventListener('pointermove', event => {
+art?.addEventListener('pointerenter', () => { bounds = art.getBoundingClientRect(); });
+art?.addEventListener('pointermove', event => {
   if (paused() || !finePointer.matches || event.pointerType === 'touch' || document.hidden) return;
   bounds ??= art.getBoundingClientRect();
   const x = Math.max(-.5, Math.min(.5, (event.clientX - bounds.left) / bounds.width - .5));
@@ -89,6 +89,6 @@ art.addEventListener('pointermove', event => {
     sculpture.style.setProperty('--drift-y', `${y * 10}px`);
   });
 }, { passive: true });
-art.addEventListener('pointerleave', resetTilt);
+art?.addEventListener('pointerleave', resetTilt);
 window.addEventListener('resize', () => { bounds = undefined; resetTilt(); }, { passive: true });
 window.addEventListener('scroll', () => { bounds = undefined; }, { passive: true });
