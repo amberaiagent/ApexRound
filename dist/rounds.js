@@ -59,6 +59,11 @@ function row(round) {
 
 function renderDirectory() {
   if (!list) return;
+  if (!snapshot || (!snapshot.state && !snapshot.error)) {
+    if (lastRender !== 'loading') list.replaceChildren(empty('Loading rounds…', 'Checking the official arena schedule.'));
+    lastRender = 'loading';
+    return;
+  }
   const result = roundDirectory(snapshot, { filter, page, query: search?.value });
   page = result.page;
   const key = JSON.stringify(result);
@@ -90,6 +95,11 @@ function metric(label, value, explanation) {
 
 function renderDetail() {
   if (!detail) return;
+  if (!snapshot || (!snapshot.state && !snapshot.error)) {
+    if (lastRender !== 'loading') detail.replaceChildren(empty('Loading this round…', 'Checking the official arena schedule.'));
+    lastRender = 'loading';
+    return;
+  }
   const params = new URLSearchParams(location.search);
   const id = params.getAll('round').length === 1 ? params.get('round') : null;
   const result = roundDetail(snapshot, id);

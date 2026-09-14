@@ -59,6 +59,7 @@ function publishState() {
   // Give page modules a read-only snapshot; they cannot mutate the registration state.
   window.dispatchEvent(new CustomEvent('arena:state', { detail: {
     state: arena ? structuredClone(arena) : null, schedule: view(), ready: fresh(),
+    error: syncError || null,
     wallet: { address: wallet.address, chainId: wallet.chainId },
   } }));
 }

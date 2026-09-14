@@ -192,6 +192,8 @@ test('Round pages receive state whether the shared app loads before or after the
     const page = runtime({ eager });
     assert.equal(page.requests, 1);
     if (!eager) {
+      assert.match(page.nodes.get('round-list').textContent, /Loading rounds/);
+      page.send({state:null, ready:false, error:'Network unavailable'});
       assert.match(page.nodes.get('round-list').textContent, /updates unavailable/i);
       page.send();
     }
