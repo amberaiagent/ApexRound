@@ -1,0 +1,64 @@
+/* The static layout remains readable before JavaScript or without animation support. */
+.hero-art { isolation: isolate; perspective: 1000px; }
+.hero-art::before {
+  content: ''; position: absolute; inset: -25%; pointer-events: none;
+  background: radial-gradient(ellipse at 32% 38%, #f4f4f42b, transparent 48%);
+  animation: arena-light 14s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+.arena-sculpture {
+  overflow: visible;
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translate3d(var(--drift-x, 0px), var(--drift-y, 0px), 0);
+  transition: transform 700ms cubic-bezier(.2,.75,.2,1);
+}
+.sculpture-levitation { transform-origin: 320px 300px; animation: arena-float 8s ease-in-out infinite; }
+.sculpture-tier { transform-box: view-box; }
+.tier-lower { transform-origin: 320px 374px; animation: arena-lower 9s ease-in-out infinite; }
+.tier-middle { transform-origin: 320px 286px; animation: arena-middle 8s ease-in-out infinite; }
+.tier-upper { transform-origin: 320px 205px; animation: arena-upper 7s ease-in-out infinite; }
+.sculpture-shadow { transform-origin: 321px 492px; animation: arena-shadow 8s ease-in-out infinite; }
+.sculpture-levitation, .sculpture-tier, .sculpture-shadow { animation-play-state: paused; }
+.motion-running .sculpture-levitation, .motion-running .sculpture-tier,
+.motion-running .sculpture-shadow, .hero-art.motion-running::before { animation-play-state: running; }
+.motion-toggle {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 9px;
+  border: 1px solid #2020204a; border-radius: 20px; background: transparent;
+  color: var(--on-accent); font-size: 9px; line-height: 1; letter-spacing: .025em;
+}
+.motion-toggle[hidden] { display: none; }
+.motion-toggle:disabled { opacity: .7; }
+.motion-symbol { width: 7px; height: 9px; border-inline: 2px solid currentColor; }
+.motion-paused .motion-symbol { border: 0; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 6px solid currentColor; width: 6px; height: 8px; }
+.hero-art .art-top { min-height: 26px; }
+html.motion-paused { scroll-behavior: auto; }
+.motion-paused .arena-sculpture { transform: none; transition: none; }
+.motion-paused .sculpture-levitation, .motion-paused .sculpture-tier,
+.motion-paused .sculpture-shadow, .motion-paused .hero-art::before { animation-play-state: paused !important; }
+@keyframes arena-float {
+  0%, 100% { transform: translateY(6px) rotate(-1deg); }
+  50% { transform: translateY(-14px) rotate(1.5deg); }
+}
+@keyframes arena-upper {
+  0%, 100% { transform: translate(0,-3px) rotate(-1deg); }
+  50% { transform: translate(7px,-26px) rotate(3deg); }
+}
+@keyframes arena-middle {
+  0%, 100% { transform: translate(0,2px); }
+  50% { transform: translate(-7px,-7px) rotate(-2deg); }
+}
+@keyframes arena-lower {
+  0%, 100% { transform: translate(0,2px) rotate(0); }
+  50% { transform: translate(3px,10px) rotate(1deg); }
+}
+@keyframes arena-shadow {
+  0%, 100% { transform: scale(1); opacity: .85; }
+  50% { transform: scale(.85); opacity: .48; }
+}
+@keyframes arena-light { to { transform: translate(12%,8%); opacity: .45; } }
+@media (max-width: 600px) {
+  .motion-toggle { font-size: 8px; gap: 6px; padding: 7px 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arena-sculpture { transform: none !important; transition: none !important; }
+  .sculpture-levitation, .sculpture-tier, .sculpture-shadow, .hero-art::before { animation: none !important; }
+}

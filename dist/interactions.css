@@ -1,0 +1,142 @@
+/* Finite UI feedback. All content remains visible without JavaScript or motion. */
+:root { --interaction-ease: cubic-bezier(.22, 1, .36, 1); }
+
+/* Replace the original unscoped hover transform, including on touch screens. */
+button:not(:disabled):hover, a.primary:hover { transform: none; }
+
+:is(.primary, .outline, .back-top, .close) {
+  transition: background-color .22s ease, border-color .22s ease,
+    box-shadow .3s ease, color .22s ease;
+}
+
+nav a { position: relative; }
+nav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;
+  height: 1px;
+  background: var(--accent);
+  scale: 0 1;
+  transform-origin: right center;
+}
+nav a:hover, .text-link:hover { text-decoration: none; }
+nav a:focus-visible::after { scale: 1 1; transform-origin: left center; }
+.text-link {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  background-position: left bottom;
+  padding-bottom: 4px;
+}
+.text-link:focus-visible { background-size: 100% 1px; }
+
+.steps article {
+  transition: border-color .3s ease, box-shadow .4s ease;
+}
+.steps .step-figure { transition: box-shadow .4s ease; }
+
+.faq summary::after {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  transform-origin: center;
+}
+.faq details[open] summary::after { content: '+'; rotate: 45deg; }
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.primary, .outline):not(:disabled):hover {
+    box-shadow: 0 8px 24px #7d6db326;
+    border-color: var(--accent);
+  }
+  .primary:not(:disabled):hover { box-shadow: 0 9px 26px #7d6db33b, inset 0 1px 0 #f4f4f43b; }
+  .outline:not(:disabled):hover, .back-top:hover, .close:hover { background-color: #7d6db310; }
+  .back-top:hover { border-color: var(--accent); }
+  nav a:hover::after { scale: 1 1; transform-origin: left center; }
+  .text-link:hover { background-size: 100% 1px; }
+  .steps article:hover { border-color: var(--accent); box-shadow: 0 16px 38px #7d6db319; }
+  .steps article:hover .step-figure { box-shadow: 0 8px 24px #7d6db319; }
+  .steps .accent-step:hover { box-shadow: 0 18px 42px #7d6db33b; }
+  .faq summary:hover { color: var(--ink); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.motion-paused) nav a::after {
+    transition: scale .42s var(--interaction-ease);
+  }
+  html:not(.motion-paused) .text-link {
+    transition: background-size .42s var(--interaction-ease);
+  }
+  html:not(.motion-paused) .faq summary::after {
+    transition: rotate .35s var(--interaction-ease);
+  }
+  html:not(.motion-paused) .faq details[open] > p {
+    animation: arena-answer-enter .34s var(--interaction-ease) both;
+  }
+  html:not(.motion-paused) dialog[open] {
+    animation: arena-dialog-enter .38s var(--interaction-ease) both;
+  }
+  html:not(.motion-paused) dialog[open]::backdrop {
+    animation: arena-backdrop-enter .28s ease-out both;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html:not(.motion-paused) :is(.primary, .outline, .back-top) {
+    transition: translate .38s var(--interaction-ease), scale .3s var(--interaction-ease),
+      background-color .22s ease, border-color .22s ease, box-shadow .3s ease;
+  }
+  html:not(.motion-paused) :is(.primary, .outline, .back-top):not(:disabled):hover { translate: 0 -3px; }
+  html:not(.motion-paused) :is(.primary, .outline, .back-top):not(:disabled):active { translate: 0 0; scale: .98; }
+  html:not(.motion-paused) .steps article {
+    /* Individual translate composes with the scroll reveal's transform animation. */
+    transition: translate .55s var(--interaction-ease), border-color .3s ease, box-shadow .4s ease;
+  }
+  html:not(.motion-paused) .steps article:hover { translate: 0 -6px; }
+  html:not(.motion-paused) .steps .step-figure {
+    transition: scale .65s var(--interaction-ease), box-shadow .4s ease;
+  }
+  html:not(.motion-paused) .steps article:hover .step-figure { scale: 1.035; }
+}
+
+@keyframes arena-answer-enter {
+  from { opacity: .6; translate: 0 7px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes arena-dialog-enter {
+  from { opacity: 0; translate: 0 15px; scale: .98; }
+  to { opacity: 1; translate: 0 0; scale: 1; }
+}
+@keyframes arena-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Pause removes displacement and entrance effects without hiding open content. */
+html.motion-paused :is(.primary, .outline, .back-top, .close, .steps article,
+  .step-figure, .text-link, .faq details[open] > p, dialog[open]) {
+  animation: none !important;
+  transition: none !important;
+  translate: none;
+  scale: none;
+}
+html.motion-paused nav a::after,
+html.motion-paused .faq summary::after,
+html.motion-paused dialog[open]::backdrop {
+  animation: none !important;
+  transition: none !important;
+}
+html.motion-paused .faq details[open] summary::after { content: '−'; rotate: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.primary, .outline, .back-top, .close, .steps article, .step-figure,
+    .text-link, .faq details[open] > p, dialog[open]),
+  nav a::after, .faq summary::after, dialog[open]::backdrop {
+    animation: none !important;
+    transition: none !important;
+  }
+  .faq details[open] summary::after { content: '−'; rotate: none; }
+}

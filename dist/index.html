@@ -8,6 +8,8 @@
   <title>ARENA — Your edge. Your arena.</title>
   <link rel="icon" type="image/png" href="assets/arena-logo.png">
   <link rel="stylesheet" href="style.css?v=arena-token-20260914">
+  <link rel="stylesheet" href="motion.css?v=arena-motion-20260914">
+  <link rel="stylesheet" href="interactions.css?v=arena-motion-20260914">
 </head>
 <body>
 <a class="skip-link" href="#arena">Skip to the arena</a>
@@ -25,9 +27,57 @@
       <a class="primary" href="#arena">Enter the arena <span aria-hidden="true">↗</span></a>
       <div class="hero-bottom"><span class="chain"><span class="chain-dot"></span> Built on Robinhood Chain</span><span id="launch-badge" class="launch-badge">Coming soon</span></div>
     </div>
-    <div class="hero-art" aria-hidden="true">
-      <div class="art-top"><span>THE EDGE IS YOURS.</span></div>
-      <img class="arena-sculpture" src="assets/arena-sculpture.svg" alt="" width="640" height="600">
+    <div class="hero-art">
+      <div class="art-top"><span>THE EDGE IS YOURS.</span><button id="motion-toggle" class="motion-toggle" type="button" aria-label="Pause animations" hidden><span class="motion-symbol" aria-hidden="true"></span><span class="motion-label">Motion on</span></button></div>
+      <svg class="arena-sculpture" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="640" height="600" viewBox="0 0 640 600" fill="none">
+  <defs>
+    <linearGradient id="surface" x1="116" y1="115" x2="451" y2="498" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f4f4f4"/>
+      <stop offset=".44" stop-color="#f4f4f4"/>
+      <stop offset="1" stop-color="#a99ecc"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="94" y1="250" x2="548" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a99ecc"/>
+      <stop offset=".19" stop-color="#f4f4f4"/>
+      <stop offset=".44" stop-color="#c9c2de"/>
+      <stop offset=".75" stop-color="#7d6db3"/>
+      <stop offset="1" stop-color="#b9afd5"/>
+    </linearGradient>
+    <linearGradient id="inside" x1="320" y1="190" x2="320" y2="459" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7d6db3"/>
+      <stop offset="1" stop-color="#4e426f"/>
+    </linearGradient>
+    <radialGradient id="floor">
+      <stop stop-color="#4e426f" stop-opacity=".48"/>
+      <stop offset="1" stop-color="#7d6db3" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <ellipse class="sculpture-shadow" cx="321" cy="492" rx="233" ry="59" fill="url(#floor)" filter="url(#shadow)"/>
+  <g class="sculpture-levitation"><g transform="rotate(-24 320 300)">
+    <g class="sculpture-tier tier-lower">
+    <path d="M93 374a227 103 0 0 0 454 0v27a227 103 0 0 1-454 0z" fill="url(#edge)"/>
+    <path d="M165 374a155 64 0 0 1 310 0v27a155 64 0 0 0-310 0z" fill="url(#inside)"/>
+    <path fill-rule="evenodd" d="M93 374a227 103 0 1 0 454 0 227 103 0 1 0-454 0Zm72 0a155 64 0 1 0 310 0 155 64 0 1 0-310 0Z" fill="url(#surface)"/>
+    <ellipse cx="320" cy="374" rx="226.5" ry="102.5" stroke="#f4f4f4" stroke-opacity=".65"/>
+    <ellipse cx="320" cy="374" rx="155" ry="64" stroke="#7d6db3" stroke-opacity=".45"/>
+
+    </g><g class="sculpture-tier tier-middle">
+    <path d="M128 286a192 88 0 0 0 384 0v25a192 88 0 0 1-384 0z" fill="url(#edge)"/>
+    <path d="M195 286a125 51 0 0 1 250 0v25a125 51 0 0 0-250 0z" fill="url(#inside)"/>
+    <path fill-rule="evenodd" d="M128 286a192 88 0 1 0 384 0 192 88 0 1 0-384 0Zm67 0a125 51 0 1 0 250 0 125 51 0 1 0-250 0Z" fill="url(#surface)"/>
+    <ellipse cx="320" cy="286" rx="191.5" ry="87.5" stroke="#f4f4f4" stroke-opacity=".8"/>
+    <ellipse cx="320" cy="286" rx="125" ry="51" stroke="#7d6db3" stroke-opacity=".45"/>
+
+    </g><g class="sculpture-tier tier-upper">
+    <path d="M161 205a159 73 0 0 0 318 0v23a159 73 0 0 1-318 0z" fill="url(#edge)"/>
+    <path d="M223 205a97 38 0 0 1 194 0v23a97 38 0 0 0-194 0z" fill="url(#inside)"/>
+    <path fill-rule="evenodd" d="M161 205a159 73 0 1 0 318 0 159 73 0 1 0-318 0Zm62 0a97 38 0 1 0 194 0 97 38 0 1 0-194 0Z" fill="url(#surface)"/>
+    <ellipse cx="320" cy="205" rx="158.5" ry="72.5" stroke="#f4f4f4" stroke-opacity=".9"/>
+    <ellipse cx="320" cy="205" rx="97" ry="38" stroke="#7d6db3" stroke-opacity=".45"/>
+    </g>
+  </g></g>
+</svg>
       <div class="art-bottom"><span>Everyone starts together.<br>Where you finish is up to you.</span></div>
     </div>
   </section>
@@ -89,5 +139,6 @@
 </dialog>
 <div id="toast" role="status"></div>
 <script type="module" src="app.js?v=arena-token-20260914"></script>
+<script type="module" src="motion.js?v=arena-motion-20260914"></script>
 </body>
 </html>
