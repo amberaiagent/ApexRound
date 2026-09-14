@@ -13,12 +13,13 @@ export const pages = [
   ['token', '/token/', '$ARENA access — ARENA', 'The official access contract, network and 10 million token entry requirement.'],
   ['rules', '/rules/', 'The rulebook — ARENA', 'Read the confirmed competition rules, entry requirements and terms awaiting final confirmation.'],
 ];
-const layout = await readFile(path.join(root, 'site/layout.html'), 'utf8');
-const sculpture = await readFile(path.join(root, 'site/components/sculpture.svg'), 'utf8');
-const entry = await readFile(path.join(root, 'site/components/entry.html'), 'utf8');
+const source = async relative => (await readFile(path.join(root, relative), 'utf8')).replaceAll('\r\n', '\n');
+const layout = await source('site/layout.html');
+const sculpture = await source('site/components/sculpture.svg');
+const entry = await source('site/components/entry.html');
 const navigation = [['arena','/arena/','The arena'],['rounds','/rounds/','Rounds'],['guide','/guide/','How to play'],['token','/token/','$ARENA'],['rules','/rules/','Rules']];
 for (const [id, url, title, description] of pages) {
-  const content = (await readFile(path.join(root, `site/pages/${id}.html`), 'utf8')).replace('{{sculpture}}', sculpture).replace('{{entry}}', entry);
+  const content = (await source(`site/pages/${id}.html`)).replace('{{sculpture}}', sculpture).replace('{{entry}}', entry);
   const nav = navigation.map(([key, href, label]) => `<a href="${href}"${key === id || (id === 'round' && key === 'rounds') ? ' aria-current="page"' : ''}>${label}</a>`).join('');
   let html = layout;
   for (const [key, value] of Object.entries({id, url, title, description, content, nav})) html = html.replaceAll(`{{${key}}}`, value);
